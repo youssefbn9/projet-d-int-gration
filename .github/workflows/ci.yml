@@ -1,0 +1,89 @@
+name: StockPro CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main]
+
+jobs:
+  server:
+    name: Backend – Lint & Tests
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ''
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+          MYSQL_DATABASE: stockpro
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    defaults:
+      run:
+        working-directory: server
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Créer le schéma
+        run: mysql -h 127.0.0.1 -u root stockpro < sql/schema.sql
+
+      - name: Lint ESLint
+        run: npm run lint
+
+      - name: Tests Jest
+        run: npm test
+        env:
+          NODE_ENV: test
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_USER: root
+          DB_PASSWORD: ''
+          DB_NAME: stockpro
+          JWT_SECRET: ci_test_secret_key_256_bits_long
+          JWT_EXPIRES_IN: 1h
+
+  client:
+    name: Frontend – Lint & Build
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: client
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Lint ESLint
+        run: npm run lint
+
+      - name: Build Vite
+        run: npm run build
