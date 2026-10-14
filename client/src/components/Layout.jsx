@@ -1,40 +1,42 @@
 import { useState } from 'react';
-import { Outlet, Navigate } from 'react-router-dom';
+import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
-import { Spinner } from './UI';
+import Spinner from './Spinner';
 
-// Map des titres par segment de route
 const PAGE_TITLES = {
-  dashboard:  'Tableau de bord',
-  products:   'Produits',
-  sales:      'Ventes',
-  movements:  'Mouvements de stock',
+  dashboard: 'Tableau de bord',
+  produits: 'Gestion des Produits',
+  'clients-fournisseurs': 'Clients & Fournisseurs',
+  ventes: 'Gestion des Ventes',
+  previsions: 'Prévisions des Ventes',
+  products: 'Produits',
+  sales: 'Ventes',
+  movements: 'Mouvements de stock',
   categories: 'Catégories',
-  suppliers:  'Fournisseurs',
-  users:      'Utilisateurs',
+  suppliers: 'Fournisseurs',
+  users: 'Utilisateurs',
 };
-
-function getTitle() {
-  const segment = window.location.pathname.split('/')[1];
-  return PAGE_TITLES[segment] || 'StockPro';
-}
 
 export default function Layout() {
   const { user, loading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
 
   if (loading) return <Spinner />;
   if (!user) return <Navigate to="/login" replace />;
+
+  const segment = location.pathname.split('/')[1] || 'dashboard';
+  const title = PAGE_TITLES[segment] || 'StockPro';
 
   return (
     <div className="app-layout">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="main-content">
         <Topbar
-          title={getTitle()}
-          onMenuToggle={() => setSidebarOpen((o) => !o)}
+          title={title}
+          onMenuToggle={() => setSidebarOpen((open) => !open)}
         />
         <main className="page-content">
           <Outlet />

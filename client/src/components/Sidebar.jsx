@@ -1,18 +1,12 @@
-import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const NAV_ITEMS = [
-  { to: '/dashboard', icon: '📊', label: 'Tableau de bord' },
-  { to: '/products',  icon: '📦', label: 'Produits' },
-  { to: '/sales',     icon: '🛒', label: 'Ventes' },
-  { to: '/movements', icon: '🔄', label: 'Mouvements' },
-  { to: '/categories',icon: '🏷️', label: 'Catégories' },
-  { to: '/suppliers', icon: '🏭', label: 'Fournisseurs' },
-];
-
-const ADMIN_ITEMS = [
-  { to: '/users', icon: '👥', label: 'Utilisateurs' },
+  { to: '/dashboard', icon: '📊', label: 'Dashboard' },
+  { to: '/produits', icon: '📦', label: 'Produits' },
+  { to: '/clients-fournisseurs', icon: '👥', label: 'Clients & Fournisseurs' },
+  { to: '/ventes', icon: '🛒', label: 'Ventes' },
+  { to: '/previsions', icon: '📈', label: 'Prévisions' },
 ];
 
 export default function Sidebar({ open, onClose }) {
@@ -25,28 +19,35 @@ export default function Sidebar({ open, onClose }) {
   };
 
   const initials = user
-    ? `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase()
-    : '?';
+    ? `${user.firstName?.[0] || user.name?.[0] || 'U'}${user.lastName?.[0] || ''}`.toUpperCase()
+    : 'U';
+
+  const companyDisplayName = user?.companyName || user?.company_name || (user?.companyId ? `Commerce #${user.companyId}` : 'Mon Commerce');
 
   return (
     <>
-      {/* Overlay mobile */}
       {open && (
         <div
           className="modal-overlay"
           style={{ zIndex: 99 }}
           onClick={onClose}
+          aria-label="Fermer le menu"
         />
       )}
 
       <aside className={`sidebar${open ? ' open' : ''}`}>
         <div className="sidebar-logo">
           <div className="sidebar-logo-icon">📈</div>
-          <span className="sidebar-logo-text">StockPro</span>
+          <div>
+            <div className="sidebar-logo-text">StockPro</div>
+            <div className="sidebar-company-name text-xs text-muted" title={companyDisplayName}>
+              🏢 {companyDisplayName}
+            </div>
+          </div>
         </div>
 
         <nav className="sidebar-nav">
-          <p className="nav-section-title">Navigation</p>
+          <p className="nav-section-title">Menu principal</p>
           {NAV_ITEMS.map((item) => (
             <NavLink
               key={item.to}
@@ -58,23 +59,6 @@ export default function Sidebar({ open, onClose }) {
               {item.label}
             </NavLink>
           ))}
-
-          {user?.role === 'admin' && (
-            <>
-              <p className="nav-section-title" style={{ marginTop: '1rem' }}>Administration</p>
-              {ADMIN_ITEMS.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  onClick={onClose}
-                  className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
-                >
-                  <span className="nav-item-icon">{item.icon}</span>
-                  {item.label}
-                </NavLink>
-              ))}
-            </>
-          )}
         </nav>
 
         <div className="sidebar-footer">
@@ -82,16 +66,18 @@ export default function Sidebar({ open, onClose }) {
             <div className="sidebar-user-avatar">{initials}</div>
             <div className="sidebar-user-info">
               <div className="sidebar-user-name">
-                {user?.firstName} {user?.lastName}
+                {user?.name || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.email}
               </div>
               <div className="sidebar-user-role">
                 {user?.role === 'admin' ? 'Administrateur' : 'Personnel'}
               </div>
             </div>
             <button
+              type="button"
               className="btn btn-icon btn-secondary btn-sm"
               onClick={handleLogout}
               title="Se déconnecter"
+              aria-label="Déconnexion"
             >
               🚪
             </button>

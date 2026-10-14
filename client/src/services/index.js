@@ -1,9 +1,6 @@
 import api from './api';
 
-export const authService = {
-  login: (email, password) => api.post('/auth/login', { email, password }),
-  me: () => api.get('/auth/me'),
-};
+export { authService } from './auth.service';
 
 export const productService = {
   getAll: (params) => api.get('/products', { params }),
