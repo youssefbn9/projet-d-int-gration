@@ -1,111 +1,119 @@
+-- StockPro – Schéma MySQL 8
+-- Base : stockpro | Encodage : utf8mb4
+
 CREATE DATABASE IF NOT EXISTS stockpro CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE stockpro;
 
--- 1. Entreprises
+-- ── Entreprises ─────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS companies (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name       VARCHAR(120)  NOT NULL,
+  created_at DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
 
--- 2. Utilisateurs
+-- ── Utilisateurs ────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS users (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  company_id INT NOT NULL,
-  name VARCHAR(255) NOT NULL,
-  email VARCHAR(191) NOT NULL UNIQUE,
-  password_hash VARCHAR(255) NOT NULL,
-  role ENUM('admin','staff') NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT fk_users_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  id           INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  company_id   INT UNSIGNED NOT NULL,
+  email        VARCHAR(191) NOT NULL,
+  password     VARCHAR(255) NOT NULL,
+  first_name   VARCHAR(80)  NOT NULL,
+  last_name    VARCHAR(80)  NOT NULL,
+  role         ENUM('admin','staff') NOT NULL DEFAULT 'staff',
+  is_active    TINYINT(1)   NOT NULL DEFAULT 1,
+  created_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_user_email (email),
+  CONSTRAINT fk_user_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
--- 3. Catégories
+-- ── Catégories ──────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS categories (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  company_id INT NOT NULL,
-  name VARCHAR(255) NOT NULL,
-  CONSTRAINT fk_categories_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  company_id INT UNSIGNED NOT NULL,
+  name       VARCHAR(100) NOT NULL,
+  created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_cat_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
--- 4. Fournisseurs
+-- ── Fournisseurs ────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS suppliers (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  company_id INT NOT NULL,
-  name VARCHAR(255) NOT NULL,
-  email VARCHAR(191) NULL,
-  phone VARCHAR(50) NULL,
-  address TEXT NULL,
-  CONSTRAINT fk_suppliers_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  company_id INT UNSIGNED NOT NULL,
+  name       VARCHAR(120) NOT NULL,
+  email      VARCHAR(191),
+  phone      VARCHAR(30),
+  address    TEXT,
+  created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_sup_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
--- 5. Produits
+-- ── Produits ────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS products (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  company_id INT NOT NULL,
-  category_id INT NULL,
-  supplier_id INT NULL,
-  name VARCHAR(255) NOT NULL,
-  sku VARCHAR(100) NOT NULL,
-  price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-  cost DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-  stock INT NOT NULL DEFAULT 0,
-  min_stock INT NOT NULL DEFAULT 0,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT fk_products_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE RESTRICT,
-  CONSTRAINT fk_products_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT,
-  CONSTRAINT fk_products_supplier FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE RESTRICT,
-  CONSTRAINT uq_products_company_sku UNIQUE (company_id, sku),
-  CONSTRAINT chk_products_price_stock CHECK (price >= 0 AND stock >= 0)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  company_id      INT UNSIGNED   NOT NULL,
+  category_id     INT UNSIGNED,
+  supplier_id     INT UNSIGNED,
+  sku             VARCHAR(80)    NOT NULL,
+  name            VARCHAR(200)   NOT NULL,
+  description     TEXT,
+  unit_price      DECIMAL(12,2)  NOT NULL DEFAULT 0.00,
+  stock_quantity  INT            NOT NULL DEFAULT 0,
+  stock_min       INT            NOT NULL DEFAULT 0,
+  image_url       VARCHAR(500),
+  created_at      DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at      DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_product_sku (company_id, sku),
+  CONSTRAINT fk_prod_company  FOREIGN KEY (company_id)  REFERENCES companies(id)  ON DELETE CASCADE,
+  CONSTRAINT fk_prod_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL,
+  CONSTRAINT fk_prod_supplier FOREIGN KEY (supplier_id) REFERENCES suppliers(id)  ON DELETE SET NULL
+) ENGINE=InnoDB;
 
--- 6. Clients
-CREATE TABLE IF NOT EXISTS customers (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  company_id INT NOT NULL,
-  name VARCHAR(255) NOT NULL,
-  email VARCHAR(191) NULL,
-  phone VARCHAR(50) NULL,
-  CONSTRAINT fk_customers_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- 7. Ventes
+-- ── Ventes ──────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS sales (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  company_id INT NOT NULL,
-  customer_id INT NULL,
-  user_id INT NOT NULL,
-  total DECIMAL(12,2) NOT NULL DEFAULT 0.00,
-  status ENUM('pending','paid','cancelled') NOT NULL DEFAULT 'pending',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT fk_sales_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE RESTRICT,
-  CONSTRAINT fk_sales_customer FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE RESTRICT,
-  CONSTRAINT fk_sales_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT,
-  INDEX idx_sales_company_created (company_id, created_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  id           INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  company_id   INT UNSIGNED   NOT NULL,
+  user_id      INT UNSIGNED   NOT NULL,
+  total_amount DECIMAL(14,2)  NOT NULL DEFAULT 0.00,
+  status       ENUM('completed','cancelled') NOT NULL DEFAULT 'completed',
+  note         TEXT,
+  created_at   DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_sale_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE,
+  CONSTRAINT fk_sale_user    FOREIGN KEY (user_id)    REFERENCES users(id)     ON DELETE RESTRICT
+) ENGINE=InnoDB;
 
--- 8. Lignes de vente
+-- ── Lignes de vente ─────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS sale_items (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  sale_id INT NOT NULL,
-  product_id INT NOT NULL,
-  quantity INT NOT NULL,
-  unit_price DECIMAL(10,2) NOT NULL,
-  CONSTRAINT fk_sale_items_sale FOREIGN KEY (sale_id) REFERENCES sales(id) ON DELETE CASCADE,
-  CONSTRAINT fk_sale_items_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT,
-  INDEX idx_sale_items_product_id (product_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  id           INT UNSIGNED  AUTO_INCREMENT PRIMARY KEY,
+  sale_id      INT UNSIGNED  NOT NULL,
+  product_id   INT UNSIGNED  NOT NULL,
+  quantity     INT           NOT NULL,
+  unit_price   DECIMAL(12,2) NOT NULL,  -- copié au moment de la vente
+  subtotal     DECIMAL(14,2) NOT NULL,
+  CONSTRAINT fk_item_sale    FOREIGN KEY (sale_id)    REFERENCES sales(id)    ON DELETE CASCADE,
+  CONSTRAINT fk_item_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT
+) ENGINE=InnoDB;
 
--- 9. Mouvements de stock
+-- ── Mouvements de stock ─────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS stock_movements (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  company_id INT NOT NULL,
-  product_id INT NOT NULL,
-  type ENUM('in','out','adjustment') NOT NULL,
-  quantity INT NOT NULL,
-  reason VARCHAR(255) NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT fk_stock_movements_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE RESTRICT,
-  CONSTRAINT fk_stock_movements_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT,
-  INDEX idx_stock_movements_company_created (company_id, created_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  id           INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  company_id   INT UNSIGNED NOT NULL,
+  product_id   INT UNSIGNED NOT NULL,
+  user_id      INT UNSIGNED NOT NULL,
+  type         ENUM('entry','exit','adjustment') NOT NULL,
+  quantity     INT          NOT NULL,   -- positif = entrée, négatif = sortie
+  reason       VARCHAR(255),
+  sale_id      INT UNSIGNED,            -- nullable, lié si mouvement de vente
+  created_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_mv_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE,
+  CONSTRAINT fk_mv_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+  CONSTRAINT fk_mv_user    FOREIGN KEY (user_id)    REFERENCES users(id)    ON DELETE RESTRICT,
+  CONSTRAINT fk_mv_sale    FOREIGN KEY (sale_id)    REFERENCES sales(id)    ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+-- ── Index supplémentaires ────────────────────────────────────────────────────
+CREATE INDEX idx_products_company    ON products(company_id);
+CREATE INDEX idx_sales_company_date  ON sales(company_id, created_at);
+CREATE INDEX idx_movements_company   ON stock_movements(company_id, created_at);
