@@ -1,18 +1,26 @@
 'use strict';
 
 const mysql = require('mysql2/promise');
-require('dotenv').config();
+const env = require('./env');
 
 const pool = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT, 10) || 3306,
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'stockpro',
+  host: env.db.host,
+  port: env.db.port,
+  user: env.db.user,
+  password: env.db.password,
+  database: env.db.database,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
   timezone: '+00:00',
 });
+
+const testConnection = async () => {
+  const connection = await pool.getConnection();
+  connection.release();
+  return true;
+};
+
+pool.testConnection = testConnection;
 
 module.exports = pool;

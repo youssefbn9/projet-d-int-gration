@@ -27,7 +27,7 @@ describe('POST /api/auth/login', () => {
       .post('/api/auth/login')
       .send({ email: 'inconnu@test.com', password: 'motdepasse123' });
     expect(res.status).toBe(401);
-    expect(res.body.error).toBe('CREDENTIALS_INVALIDES');
+    expect(res.body.error).toBe('INVALID_CREDENTIALS');
   });
 
   it('retourne 422 si email invalide', async () => {
@@ -35,6 +35,21 @@ describe('POST /api/auth/login', () => {
       .post('/api/auth/login')
       .send({ email: 'pas-un-email', password: 'test' });
     expect(res.status).toBe(422);
+  });
+});
+
+describe('POST /api/auth/register', () => {
+  afterEach(() => jest.clearAllMocks());
+
+  it('retourne 422 si mot de passe faible (< 8 car, pas de maj, pas de chiffre)', async () => {
+    const res = await request(app).post('/api/auth/register').send({
+      companyName: 'Ma Boutique',
+      name: 'Jean Test',
+      email: 'jean@test.com',
+      password: 'faible',
+    });
+    expect(res.status).toBe(422);
+    expect(res.body.error).toBe('VALIDATION_ERROR');
   });
 });
 
@@ -47,19 +62,19 @@ describe('GET /health', () => {
 });
 
 describe('Routes protégées', () => {
+  it('GET /api/auth/me retourne 401 sans token', async () => {
+    const res = await request(app).get('/api/auth/me');
+    expect(res.status).toBe(401);
+    expect(res.body.error).toBe('UNAUTHORIZED');
+  });
+
   it('GET /api/products retourne 401 sans token', async () => {
     const res = await request(app).get('/api/products');
     expect(res.status).toBe(401);
-    expect(res.body.error).toBe('NON_AUTHENTIFIE');
-  });
-
-  it('GET /api/sales retourne 401 sans token', async () => {
-    const res = await request(app).get('/api/sales');
-    expect(res.status).toBe(401);
+    expect(res.body.error).toBe('UNAUTHORIZED');
   });
 });
 
 afterAll(async () => {
-  // Fermer le pool si ouvert
   if (pool.end) await pool.end();
 });

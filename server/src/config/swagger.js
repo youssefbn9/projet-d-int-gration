@@ -1,6 +1,7 @@
 'use strict';
 
 const swaggerJsdoc = require('swagger-jsdoc');
+const path = require('path');
 
 const options = {
   definition: {
@@ -10,15 +11,19 @@ const options = {
       version: '1.0.0',
       description: 'API REST de gestion de stock et de ventes multi-commerces',
     },
-    servers: [{ url: 'http://localhost:4000/api', description: 'Serveur local' }],
+    servers: [{ url: '/api', description: 'Serveur local' }],
     components: {
       securitySchemes: {
-        bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description: 'Format: Bearer <votre_token_jwt>',
+        },
       },
     },
-    security: [{ bearerAuth: [] }],
   },
-  apis: ['./src/routes/*.js'],
+  apis: [path.join(__dirname, '../routes/*.js')],
 };
 
 module.exports = swaggerJsdoc(options);
