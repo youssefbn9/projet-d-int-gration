@@ -1,3 +1,5 @@
+import { X } from 'lucide-react';
+
 export default function ConfirmDialog({
   open,
   title = 'Confirmation de suppression',
@@ -23,11 +25,12 @@ export default function ConfirmDialog({
           <h2 className="modal-title">{title}</h2>
           <button
             type="button"
-            className="btn btn-icon btn-secondary btn-sm"
+            className="btn btn-icon btn-sm"
             onClick={onCancel}
             disabled={loading}
+            aria-label="Fermer"
           >
-            ✕
+            <X size={18} strokeWidth={1.75} />
           </button>
         </div>
         <div className="modal-body">

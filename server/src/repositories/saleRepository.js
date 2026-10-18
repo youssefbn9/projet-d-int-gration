@@ -16,6 +16,8 @@ const saleRepository = {
       );
       const saleId = saleResult.insertId;
 
+      let calculatedTotal = 0;
+
       // Insérer les lignes et décrémenter le stock avec FOR UPDATE
       for (const item of items) {
         const [prodRows] = await conn.query(
@@ -28,8 +30,9 @@ const saleRepository = {
           throw Object.assign(new Error(`Stock insuffisant pour le produit ${item.productId}`), { code: 'STOCK_INSUFFISANT', status: 400 });
         }
 
-        const unitPrice = product.unit_price;
+        const unitPrice = parseFloat(product.unit_price);
         const subtotal = parseFloat((unitPrice * item.quantity).toFixed(2));
+        calculatedTotal += subtotal;
 
         await conn.query(
           'INSERT INTO sale_items (sale_id, product_id, quantity, unit_price, subtotal) VALUES (?, ?, ?, ?, ?)',
@@ -47,6 +50,12 @@ const saleRepository = {
           [companyId, item.productId, userId, 'exit', -item.quantity, 'Vente', saleId]
         );
       }
+
+      // Mettre à jour le total_amount réel de la vente
+      await conn.query(
+        'UPDATE sales SET total_amount = ? WHERE id = ?',
+        [calculatedTotal.toFixed(2), saleId]
+      );
 
       await conn.commit();
       return saleId;
@@ -118,6 +127,15 @@ const saleRepository = {
       [companyId, parseInt(limit, 10)]
     );
     return rows;
+  },
+
+  /** Nombre total de ventes finalisées du commerce */
+  async getTotalSalesCount(companyId) {
+    const [rows] = await pool.query(
+      `SELECT COUNT(*) AS count FROM sales WHERE company_id = ? AND status = 'completed'`,
+      [companyId]
+    );
+    return rows[0]?.count || 0;
   },
 };
 

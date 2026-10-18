@@ -35,11 +35,12 @@ const saleService = {
   },
 
   async getDashboardData(companyId) {
-    const [revenue, topProducts] = await Promise.all([
+    const [revenue, topProducts, totalSalesCount] = await Promise.all([
       saleRepository.getDailyRevenue(companyId, 30),
       saleRepository.getTopProducts(companyId, 5),
+      saleRepository.getTotalSalesCount(companyId),
     ]);
-    return { revenue, topProducts };
+    return { revenue, topProducts, salesCount: totalSalesCount };
   },
 };
 

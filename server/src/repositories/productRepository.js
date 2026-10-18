@@ -94,9 +94,10 @@ const productRepository = {
     const [rows] = await pool.query(
       `SELECT
          COUNT(*) AS total_products,
-         SUM(stock_quantity) AS total_stock,
-         SUM(CASE WHEN stock_quantity <= stock_min THEN 1 ELSE 0 END) AS low_stock_count,
-         SUM(stock_quantity * unit_price) AS stock_value
+         COALESCE(SUM(stock_quantity), 0) AS total_stock,
+         COALESCE(SUM(CASE WHEN stock_quantity <= stock_min THEN 1 ELSE 0 END), 0) AS low_stock_count,
+         COALESCE(SUM(CASE WHEN stock_quantity = 0 THEN 1 ELSE 0 END), 0) AS out_of_stock_count,
+         COALESCE(SUM(stock_quantity * unit_price), 0) AS stock_value
        FROM products WHERE company_id = ?`,
       [companyId]
     );

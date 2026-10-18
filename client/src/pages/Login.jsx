@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
 import FormField from '../components/FormField';
 import { Alert } from '../components/UI';
+import { Package, ShoppingCart, TrendingUp } from 'lucide-react';
 
 export default function Login() {
   const { user, login, register } = useAuth();
@@ -23,14 +24,8 @@ export default function Login() {
     password: '',
   });
 
-  // Touched states for inline errors
   const [touched, setTouched] = useState({});
 
-  if (user) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
-  // Real-time validations
   const validateEmail = (email) => {
     if (!email) return 'L\'adresse email est requise';
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -46,7 +41,6 @@ export default function Login() {
     return '';
   };
 
-  // Inline errors calculation
   const loginErrors = useMemo(() => {
     return {
       email: touched.loginEmail ? validateEmail(loginForm.email) : '',
@@ -69,7 +63,6 @@ export default function Login() {
     };
   }, [registerForm, touched]);
 
-  // Handlers
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setServerError('');
@@ -124,166 +117,234 @@ export default function Login() {
     }
   };
 
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return (
-    <div className="login-page">
-      <div className="login-card">
-        <div className="login-logo">
-          <div className="sidebar-logo-icon" style={{ width: 48, height: 48, fontSize: '1.5rem' }}>
-            📈
+    <div className="login-split-page">
+      {/* Panneau gauche : Dégradé signature lumineux & arguments clés */}
+      <div className="login-left-panel">
+        <div className="login-left-circles">
+          <div className="circle-dec-1" />
+          <div className="circle-dec-2" />
+        </div>
+
+        <div className="login-left-content">
+          <div className="login-brand-badge">
+            <Package size={20} strokeWidth={2} />
+            <span>StockPro SaaS</span>
           </div>
-          <span className="sidebar-logo-text" style={{ fontSize: '1.75rem' }}>StockPro</span>
-        </div>
 
-        {/* Onglets Connexion / Inscription */}
-        <div className="login-tabs">
-          <button
-            type="button"
-            className={`tab-btn ${tab === 'login' ? 'active' : ''}`}
-            onClick={() => {
-              setTab('login');
-              setServerError('');
-            }}
-          >
-            Connexion
-          </button>
-          <button
-            type="button"
-            className={`tab-btn ${tab === 'register' ? 'active' : ''}`}
-            onClick={() => {
-              setTab('register');
-              setServerError('');
-            }}
-          >
-            Inscription du commerce
-          </button>
-        </div>
+          <h1 className="login-left-title">
+            Gérez vos stocks & ventes avec sérénité
+          </h1>
+          <p className="login-left-sub">
+            La solution cloud multi-commerces conçue pour les commerçants modernes, performante, claire et intuitive.
+          </p>
 
-        {serverError && <Alert type="danger">{serverError}</Alert>}
-
-        {tab === 'login' ? (
-          <form onSubmit={handleLoginSubmit} className="flex-col gap-4" noValidate>
-            <FormField
-              label="Adresse email"
-              name="email"
-              type="email"
-              value={loginForm.email}
-              onChange={(e) => {
-                setLoginForm({ ...loginForm, email: e.target.value });
-                setTouched((t) => ({ ...t, loginEmail: true }));
-              }}
-              onBlur={() => setTouched((t) => ({ ...t, loginEmail: true }))}
-              placeholder="admin@alpha.com"
-              error={loginErrors.email}
-              autoComplete="email"
-              required
-            />
-
-            <FormField
-              label="Mot de passe"
-              name="password"
-              type="password"
-              value={loginForm.password}
-              onChange={(e) => {
-                setLoginForm({ ...loginForm, password: e.target.value });
-                setTouched((t) => ({ ...t, loginPassword: true }));
-              }}
-              onBlur={() => setTouched((t) => ({ ...t, loginPassword: true }))}
-              placeholder="••••••••"
-              error={loginErrors.password}
-              autoComplete="current-password"
-              required
-            />
-
-            <button
-              type="submit"
-              className="btn btn-primary w-full"
-              style={{ marginTop: '0.5rem', justifyContent: 'center', padding: '0.875rem' }}
-              disabled={loading}
-            >
-              {loading ? 'Connexion en cours…' : 'Se connecter'}
-            </button>
-
-            <div className="demo-accounts-box">
-              <p className="text-muted text-xs" style={{ textAlign: 'center', margin: 0 }}>
-                Comptes de test disponibles :
-              </p>
-              <p className="text-xs" style={{ textAlign: 'center', color: 'var(--color-primary-light)', margin: 0 }}>
-                admin@alpha.com / Admin1234!
-              </p>
+          <div className="login-feature-list">
+            <div className="login-feature-item">
+              <div className="login-feature-icon">
+                <Package size={18} strokeWidth={2} />
+              </div>
+              <span>Suivi du stock et alertes en temps réel</span>
             </div>
-          </form>
-        ) : (
-          <form onSubmit={handleRegisterSubmit} className="flex-col gap-4" noValidate>
-            <FormField
-              label="Nom du commerce"
-              name="companyName"
-              value={registerForm.companyName}
-              onChange={(e) => {
-                setRegisterForm({ ...registerForm, companyName: e.target.value });
-                setTouched((t) => ({ ...t, regCompany: true }));
-              }}
-              onBlur={() => setTouched((t) => ({ ...t, regCompany: true }))}
-              placeholder="Ex: Boutique Paris Sud"
-              error={registerErrors.companyName}
-              required
-            />
 
-            <FormField
-              label="Nom & prénom du gérant"
-              name="name"
-              value={registerForm.name}
-              onChange={(e) => {
-                setRegisterForm({ ...registerForm, name: e.target.value });
-                setTouched((t) => ({ ...t, regName: true }));
-              }}
-              onBlur={() => setTouched((t) => ({ ...t, regName: true }))}
-              placeholder="Jean Dupont"
-              error={registerErrors.name}
-              required
-            />
+            <div className="login-feature-item">
+              <div className="login-feature-icon">
+                <ShoppingCart size={18} strokeWidth={2} />
+              </div>
+              <span>Encaissement et transactions atomiques sécurisées</span>
+            </div>
 
-            <FormField
-              label="Email professionnel"
-              name="email"
-              type="email"
-              value={registerForm.email}
-              onChange={(e) => {
-                setRegisterForm({ ...registerForm, email: e.target.value });
-                setTouched((t) => ({ ...t, regEmail: true }));
-              }}
-              onBlur={() => setTouched((t) => ({ ...t, regEmail: true }))}
-              placeholder="contact@commerce.com"
-              error={registerErrors.email}
-              autoComplete="email"
-              required
-            />
+            <div className="login-feature-item">
+              <div className="login-feature-icon">
+                <TrendingUp size={18} strokeWidth={2} />
+              </div>
+              <span>Prévision des ruptures et aide à l'approvisionnement</span>
+            </div>
+          </div>
+        </div>
 
-            <FormField
-              label="Mot de passe"
-              name="password"
-              type="password"
-              value={registerForm.password}
-              onChange={(e) => {
-                setRegisterForm({ ...registerForm, password: e.target.value });
-                setTouched((t) => ({ ...t, regPassword: true }));
-              }}
-              onBlur={() => setTouched((t) => ({ ...t, regPassword: true }))}
-              placeholder="8+ car., 1 majuscule, 1 chiffre"
-              error={registerErrors.password}
-              autoComplete="new-password"
-              required
-            />
+        <div style={{ opacity: 0.85, fontSize: '13px', zIndex: 10 }}>
+          © {new Date().getFullYear()} StockPro. Plateforme certifiée et sécurisée.
+        </div>
+      </div>
 
+      {/* Panneau droit : Formulaire avec onglets Connexion / Inscription */}
+      <div className="login-right-panel">
+        <div className="login-card-inner">
+          <div style={{ marginBottom: '24px' }}>
+            <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-text)', marginBottom: '6px' }}>
+              {tab === 'login' ? 'Bienvenue sur StockPro' : 'Créer votre commerce'}
+            </h2>
+            <p className="text-muted" style={{ fontSize: '14px' }}>
+              {tab === 'login'
+                ? 'Connectez-vous pour accéder à votre tableau de bord'
+                : 'Commencez à gérer votre boutique dès aujourd\'hui'}
+            </p>
+          </div>
+
+          <div className="login-tabs">
             <button
-              type="submit"
-              className="btn btn-primary w-full"
-              style={{ marginTop: '0.5rem', justifyContent: 'center', padding: '0.875rem' }}
-              disabled={loading}
+              type="button"
+              className={`tab-btn ${tab === 'login' ? 'active' : ''}`}
+              onClick={() => {
+                setTab('login');
+                setServerError('');
+              }}
             >
-              {loading ? 'Création de l\'espace…' : 'Créer mon commerce'}
+              Connexion
             </button>
-          </form>
-        )}
+            <button
+              type="button"
+              className={`tab-btn ${tab === 'register' ? 'active' : ''}`}
+              onClick={() => {
+                setTab('register');
+                setServerError('');
+              }}
+            >
+              Inscription du commerce
+            </button>
+          </div>
+
+          {serverError && <Alert type="danger">{serverError}</Alert>}
+
+          {tab === 'login' ? (
+            <form onSubmit={handleLoginSubmit} className="flex-col gap-4" noValidate>
+              <FormField
+                label="Adresse email"
+                name="email"
+                type="email"
+                value={loginForm.email}
+                onChange={(e) => {
+                  setLoginForm({ ...loginForm, email: e.target.value });
+                  setTouched((t) => ({ ...t, loginEmail: true }));
+                }}
+                onBlur={() => setTouched((t) => ({ ...t, loginEmail: true }))}
+                placeholder="admin@alpha.com"
+                error={loginErrors.email}
+                autoComplete="email"
+                required
+              />
+
+              <FormField
+                label="Mot de passe"
+                name="password"
+                type="password"
+                value={loginForm.password}
+                onChange={(e) => {
+                  setLoginForm({ ...loginForm, password: e.target.value });
+                  setTouched((t) => ({ ...t, loginPassword: true }));
+                }}
+                onBlur={() => setTouched((t) => ({ ...t, loginPassword: true }))}
+                placeholder="••••••••"
+                error={loginErrors.password}
+                autoComplete="current-password"
+                required
+              />
+
+              <button
+                type="submit"
+                className="btn btn-primary w-full"
+                style={{ marginTop: '8px', padding: '12px' }}
+                disabled={loading}
+              >
+                {loading ? 'Connexion en cours…' : 'Se connecter'}
+              </button>
+
+              <div
+                style={{
+                  marginTop: '20px',
+                  padding: '12px 14px',
+                  borderRadius: '10px',
+                  background: 'var(--color-surface-subtle)',
+                  border: '1px solid var(--color-border)',
+                  fontSize: '13px',
+                }}
+              >
+                <div style={{ fontWeight: 600, color: 'var(--color-text)', marginBottom: '4px' }}>
+                  Comptes de démonstration :
+                </div>
+                <div style={{ color: 'var(--color-text-secondary)' }}>
+                  Boutique Alpha : <code>admin@alpha.com</code> / <code>Admin1234!</code>
+                </div>
+              </div>
+            </form>
+          ) : (
+            <form onSubmit={handleRegisterSubmit} className="flex-col gap-4" noValidate>
+              <FormField
+                label="Nom du commerce"
+                name="companyName"
+                value={registerForm.companyName}
+                onChange={(e) => {
+                  setRegisterForm({ ...registerForm, companyName: e.target.value });
+                  setTouched((t) => ({ ...t, regCompany: true }));
+                }}
+                onBlur={() => setTouched((t) => ({ ...t, regCompany: true }))}
+                placeholder="Ex: Boutique Paris Sud"
+                error={registerErrors.companyName}
+                required
+              />
+
+              <FormField
+                label="Nom & prénom du gérant"
+                name="name"
+                value={registerForm.name}
+                onChange={(e) => {
+                  setRegisterForm({ ...registerForm, name: e.target.value });
+                  setTouched((t) => ({ ...t, regName: true }));
+                }}
+                onBlur={() => setTouched((t) => ({ ...t, regName: true }))}
+                placeholder="Jean Dupont"
+                error={registerErrors.name}
+                required
+              />
+
+              <FormField
+                label="Email professionnel"
+                name="email"
+                type="email"
+                value={registerForm.email}
+                onChange={(e) => {
+                  setRegisterForm({ ...registerForm, email: e.target.value });
+                  setTouched((t) => ({ ...t, regEmail: true }));
+                }}
+                onBlur={() => setTouched((t) => ({ ...t, regEmail: true }))}
+                placeholder="contact@commerce.com"
+                error={registerErrors.email}
+                autoComplete="email"
+                required
+              />
+
+              <FormField
+                label="Mot de passe"
+                name="password"
+                type="password"
+                value={registerForm.password}
+                onChange={(e) => {
+                  setRegisterForm({ ...registerForm, password: e.target.value });
+                  setTouched((t) => ({ ...t, regPassword: true }));
+                }}
+                onBlur={() => setTouched((t) => ({ ...t, regPassword: true }))}
+                placeholder="8+ caractères, 1 majuscule, 1 chiffre"
+                error={registerErrors.password}
+                autoComplete="new-password"
+                required
+              />
+
+              <button
+                type="submit"
+                className="btn btn-primary w-full"
+                style={{ marginTop: '8px', padding: '12px' }}
+                disabled={loading}
+              >
+                {loading ? 'Création de l\'espace…' : 'Créer mon commerce'}
+              </button>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import { supplierService } from '../services';
 import { useFetch } from '../hooks/useFetch';
 import { Spinner, EmptyState, Alert, Modal, ConfirmModal } from '../components/UI';
 import { useAuth } from '../context/AuthContext';
+import { Plus, Pencil, Trash2, Users } from 'lucide-react';
 
 const EMPTY = { name: '', email: '', phone: '', address: '' };
 
@@ -18,63 +19,139 @@ export default function SuppliersPage() {
   const [confirmId, setConfirmId] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
-  const openCreate = () => { setForm(EMPTY); setFormError(''); setModal('create'); };
-  const openEdit = (s) => { setSelected(s); setForm({ name: s.name, email: s.email || '', phone: s.phone || '', address: s.address || '' }); setFormError(''); setModal('edit'); };
+  const openCreate = () => {
+    setForm(EMPTY);
+    setFormError('');
+    setModal('create');
+  };
+
+  const openEdit = (s) => {
+    setSelected(s);
+    setForm({
+      name: s.name,
+      email: s.email || '',
+      phone: s.phone || '',
+      address: s.address || '',
+    });
+    setFormError('');
+    setModal('edit');
+  };
+
   const handleChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
   const handleSave = async (e) => {
-    e.preventDefault(); setSaving(true); setFormError('');
+    e.preventDefault();
+    setSaving(true);
+    setFormError('');
     try {
       if (modal === 'create') await supplierService.create(form);
       else await supplierService.update(selected.id, form);
-      setModal(null); refetch();
-    } catch (err) { setFormError(err.response?.data?.message || 'Erreur'); }
-    finally { setSaving(false); }
+      setModal(null);
+      refetch();
+    } catch (err) {
+      setFormError(err.response?.data?.message || 'Erreur');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async () => {
     setDeleting(true);
-    try { await supplierService.remove(confirmId); setConfirmId(null); refetch(); }
-    finally { setDeleting(false); }
+    try {
+      await supplierService.remove(confirmId);
+      setConfirmId(null);
+      refetch();
+    } finally {
+      setDeleting(false);
+    }
   };
 
   if (loading) return <Spinner />;
 
   return (
-    <div>
-      <div className="page-header">
-        <div><h1>Fournisseurs</h1><p>Gérez vos partenaires d'approvisionnement</p></div>
-        {isAdmin && <button className="btn btn-primary" onClick={openCreate}>+ Nouveau fournisseur</button>}
-      </div>
-      {error && <Alert type="danger">{error}</Alert>}
-      <div className="card" style={{ padding: 0 }}>
-        <div className="table-wrapper">
-          <table className="table">
-            <thead><tr><th>Nom</th><th>Email</th><th>Téléphone</th><th>Adresse</th>{isAdmin && <th>Actions</th>}</tr></thead>
-            <tbody>
-              {(suppliers || []).length === 0 ? (
-                <tr><td colSpan={isAdmin ? 5 : 4}><EmptyState icon="🏭" text="Aucun fournisseur" /></td></tr>
-              ) : (
-                (suppliers || []).map((s) => (
-                  <tr key={s.id}>
-                    <td className="font-semibold">{s.name}</td>
-                    <td className="text-sm">{s.email || <span className="text-muted">—</span>}</td>
-                    <td className="text-sm">{s.phone || <span className="text-muted">—</span>}</td>
-                    <td className="text-sm text-muted truncate" style={{ maxWidth: 200 }}>{s.address || '—'}</td>
-                    {isAdmin && (
-                      <td>
-                        <div className="flex-gap-2">
-                          <button className="btn btn-secondary btn-sm" onClick={() => openEdit(s)}>✏️</button>
-                          <button className="btn btn-danger btn-sm" onClick={() => setConfirmId(s.id)}>🗑️</button>
-                        </div>
-                      </td>
-                    )}
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+    <div className="flex-col gap-6">
+      <div className="page-header flex-between">
+        <div>
+          <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--color-text)' }}>
+            Partenaires Fournisseurs
+          </h2>
+          <p className="text-muted" style={{ fontSize: '13px' }}>
+            Coordonnées des distributeurs et contacts d'approvisionnement
+          </p>
         </div>
+        {isAdmin && (
+          <button type="button" className="btn btn-primary" onClick={openCreate}>
+            <Plus size={16} strokeWidth={2} />
+            Nouveau fournisseur
+          </button>
+        )}
+      </div>
+
+      {error && <Alert type="danger">{error}</Alert>}
+
+      <div className="table-responsive">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>NOM DE L'ENTREPRISE</th>
+              <th>EMAIL</th>
+              <th>TÉLÉPHONE</th>
+              <th>ADRESSE</th>
+              {isAdmin && <th className="text-right">ACTIONS</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {(suppliers || []).length === 0 ? (
+              <tr>
+                <td colSpan={isAdmin ? 5 : 4}>
+                  <EmptyState
+                    icon={Users}
+                    text="Aucun fournisseur enregistré"
+                    sub="Ajoutez vos partenaires d'approvisionnement."
+                  />
+                </td>
+              </tr>
+            ) : (
+              (suppliers || []).map((s) => (
+                <tr key={s.id}>
+                  <td>
+                    <span style={{ fontWeight: 600 }}>{s.name}</span>
+                  </td>
+                  <td>{s.email || <span className="text-muted">—</span>}</td>
+                  <td>{s.phone || <span className="text-muted">—</span>}</td>
+                  <td>
+                    <span className="text-muted text-xs">{s.address || '—'}</span>
+                  </td>
+                  {isAdmin && (
+                    <td className="text-right">
+                      <div className="flex-gap-2" style={{ justifyContent: 'flex-end' }}>
+                        <button
+                          type="button"
+                          className="btn-icon"
+                          onClick={() => openEdit(s)}
+                          title="Modifier"
+                          aria-label={`Modifier ${s.name}`}
+                        >
+                          <Pencil size={15} strokeWidth={1.75} />
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-icon"
+                          onClick={() => setConfirmId(s.id)}
+                          title="Supprimer"
+                          aria-label={`Supprimer ${s.name}`}
+                          style={{ color: 'var(--color-danger)' }}
+                        >
+                          <Trash2 size={15} strokeWidth={1.75} />
+                        </button>
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
 
       {modal && (
@@ -83,9 +160,20 @@ export default function SuppliersPage() {
           onClose={() => setModal(null)}
           footer={
             <>
-              <button className="btn btn-secondary" onClick={() => setModal(null)}>Annuler</button>
-              <button className="btn btn-primary" form="sup-form" type="submit" disabled={saving}>
-                {saving ? '…' : 'Enregistrer'}
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setModal(null)}
+              >
+                Annuler
+              </button>
+              <button
+                className="btn btn-primary"
+                form="sup-form"
+                type="submit"
+                disabled={saving}
+              >
+                {saving ? 'Sauvegarde…' : 'Enregistrer'}
               </button>
             </>
           }
@@ -93,29 +181,52 @@ export default function SuppliersPage() {
           {formError && <Alert type="danger">{formError}</Alert>}
           <form id="sup-form" onSubmit={handleSave} className="flex-col gap-4">
             <div className="form-group">
-              <label className="form-label">Nom *</label>
-              <input name="name" className="form-input" value={form.name} onChange={handleChange} required />
+              <label className="form-label">Raison sociale *</label>
+              <input
+                name="name"
+                className="form-input"
+                value={form.name}
+                onChange={handleChange}
+                required
+              />
             </div>
-            <div className="form-grid">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
               <div className="form-group">
-                <label className="form-label">Email</label>
-                <input name="email" type="email" className="form-input" value={form.email} onChange={handleChange} />
+                <label className="form-label">Email de contact</label>
+                <input
+                  name="email"
+                  type="email"
+                  className="form-input"
+                  value={form.email}
+                  onChange={handleChange}
+                />
               </div>
               <div className="form-group">
                 <label className="form-label">Téléphone</label>
-                <input name="phone" className="form-input" value={form.phone} onChange={handleChange} />
+                <input
+                  name="phone"
+                  className="form-input"
+                  value={form.phone}
+                  onChange={handleChange}
+                />
               </div>
             </div>
             <div className="form-group">
-              <label className="form-label">Adresse</label>
-              <textarea name="address" className="form-textarea" rows={2} value={form.address} onChange={handleChange} />
+              <label className="form-label">Adresse physique</label>
+              <input
+                name="address"
+                className="form-input"
+                value={form.address}
+                onChange={handleChange}
+              />
             </div>
           </form>
         </Modal>
       )}
+
       {confirmId && (
         <ConfirmModal
-          message="Supprimer ce fournisseur ?"
+          message="Êtes-vous sûr de vouloir supprimer ce fournisseur ?"
           onConfirm={handleDelete}
           onCancel={() => setConfirmId(null)}
           loading={deleting}

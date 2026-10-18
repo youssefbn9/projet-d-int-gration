@@ -1,48 +1,44 @@
 export default function Pagination({
   currentPage = 1,
   totalPages = 1,
+  totalCount,
+  pageSize = 10,
   onPageChange,
 }) {
-  if (totalPages <= 1) return null;
+  if (totalPages <= 1 && (!totalCount || totalCount <= pageSize)) return null;
 
-  const pages = [];
-  for (let i = 1; i <= totalPages; i++) {
-    pages.push(i);
-  }
+  const start = (currentPage - 1) * pageSize + 1;
+  const end = totalCount ? Math.min(currentPage * pageSize, totalCount) : currentPage * pageSize;
 
   return (
     <nav className="pagination" aria-label="Pagination">
-      <button
-        type="button"
-        className="btn btn-secondary btn-sm page-btn"
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage <= 1}
-      >
-        ← Précédent
-      </button>
-
-      <div className="pagination-pages">
-        {pages.map((p) => (
-          <button
-            key={p}
-            type="button"
-            className={`btn btn-sm page-btn ${p === currentPage ? 'btn-primary active' : 'btn-secondary'}`}
-            onClick={() => onPageChange(p)}
-            aria-current={p === currentPage ? 'page' : undefined}
-          >
-            {p}
-          </button>
-        ))}
+      <div className="pagination-count">
+        {totalCount ? (
+          <span>{start}-{end} sur {totalCount}</span>
+        ) : (
+          <span>Page {currentPage} sur {totalPages}</span>
+        )}
       </div>
 
-      <button
-        type="button"
-        className="btn btn-secondary btn-sm page-btn"
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage >= totalPages}
-      >
-        Suivant →
-      </button>
+      <div className="pagination-actions flex-gap-2">
+        <button
+          type="button"
+          className="btn btn-secondary btn-sm"
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage <= 1}
+        >
+          Précédent
+        </button>
+
+        <button
+          type="button"
+          className="btn btn-secondary btn-sm"
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage >= totalPages}
+        >
+          Suivant
+        </button>
+      </div>
     </nav>
   );
 }
