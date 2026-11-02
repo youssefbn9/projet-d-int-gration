@@ -1,0 +1,331 @@
+### ==============================================================================
+### StockPro - Test HTTP Requests (PASSE 3/10)
+### Couvre tous les endpoints CRUD, multi-tenant (404), pagination, recherche, filtres.
+### ==============================================================================
+
+@baseUrl = http://localhost:5000/api
+
+### 1. Inscription / Connexion Commerce 1 (Admin Boutique Alpha)
+# @name loginAlpha
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@alpha.com",
+  "password": "Admin1234!"
+}
+
+### Sauvegarde du token Alpha
+@tokenAlpha = {{loginAlpha.response.body.data.token}}
+
+### 2. Inscription d'un 2ème Commerce (Boutique Gamma - pour test inter-commerces)
+# @name registerGamma
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "companyName": "Commerce Gamma Test",
+  "name": "Gerant Gamma",
+  "email": "admin@gamma.com",
+  "password": "Admin1234!"
+}
+
+### Sauvegarde du token Gamma
+@tokenGamma = {{registerGamma.response.body.data.token}}
+
+
+### ==============================================================================
+### MODULE 1 : CATÉGORIES (/api/categories)
+### ==============================================================================
+
+### 1.1 Liste des catégories
+GET {{baseUrl}}/categories
+Authorization: Bearer {{tokenAlpha}}
+
+### 1.2 Création d'une catégorie
+# @name createCategory
+POST {{baseUrl}}/categories
+Authorization: Bearer {{tokenAlpha}}
+Content-Type: application/json
+
+{
+  "name": "Accessoires Mobiles"
+}
+
+@catId = {{createCategory.response.body.data.id}}
+
+### 1.3 Test doublon nom catégorie (doit renvoyer 409 CATEGORY_ALREADY_EXISTS)
+POST {{baseUrl}}/categories
+Authorization: Bearer {{tokenAlpha}}
+Content-Type: application/json
+
+{
+  "name": "Accessoires Mobiles"
+}
+
+### 1.4 Mise à jour catégorie
+PUT {{baseUrl}}/categories/{{catId}}
+Authorization: Bearer {{tokenAlpha}}
+Content-Type: application/json
+
+{
+  "name": "Accessoires & Périphériques"
+}
+
+### 1.5 Test accès inter-commerces (Commerce Gamma tente d'accéder à catId de Alpha -> 404)
+PUT {{baseUrl}}/categories/{{catId}}
+Authorization: Bearer {{tokenGamma}}
+Content-Type: application/json
+
+{
+  "name": "Piratage"
+}
+
+### 1.6 Suppression catégorie libre
+DELETE {{baseUrl}}/categories/{{catId}}
+Authorization: Bearer {{tokenAlpha}}
+
+
+### ==============================================================================
+### MODULE 2 : FOURNISSEURS (/api/suppliers)
+### ==============================================================================
+
+### 2.1 Liste des fournisseurs
+GET {{baseUrl}}/suppliers
+Authorization: Bearer {{tokenAlpha}}
+
+### 2.2 Création d'un fournisseur
+# @name createSupplier
+POST {{baseUrl}}/suppliers
+Authorization: Bearer {{tokenAlpha}}
+Content-Type: application/json
+
+{
+  "name": "Fournisseur Express",
+  "email": "contact@express.tn",
+  "phone": "+216 71 100 200",
+  "address": "Zone Industrielle, Tunis"
+}
+
+@supId = {{createSupplier.response.body.data.id}}
+
+### 2.3 Détail du fournisseur
+GET {{baseUrl}}/suppliers/{{supId}}
+Authorization: Bearer {{tokenAlpha}}
+
+### 2.4 Test 404 inter-commerces (Gamma consulte supId de Alpha -> 404)
+GET {{baseUrl}}/suppliers/{{supId}}
+Authorization: Bearer {{tokenGamma}}
+
+### 2.5 Mise à jour du fournisseur
+PUT {{baseUrl}}/suppliers/{{supId}}
+Authorization: Bearer {{tokenAlpha}}
+Content-Type: application/json
+
+{
+  "name": "Fournisseur Express SARL",
+  "email": "direction@express.tn",
+  "phone": "+216 71 100 201",
+  "address": "Zone Industrielle II, Tunis"
+}
+
+### 2.6 Suppression fournisseur
+DELETE {{baseUrl}}/suppliers/{{supId}}
+Authorization: Bearer {{tokenAlpha}}
+
+
+### ==============================================================================
+### MODULE 3 : CLIENTS (/api/customers)
+### ==============================================================================
+
+### 3.1 Liste des clients
+GET {{baseUrl}}/customers
+Authorization: Bearer {{tokenAlpha}}
+
+### 3.2 Création d'un client
+# @name createCustomer
+POST {{baseUrl}}/customers
+Authorization: Bearer {{tokenAlpha}}
+Content-Type: application/json
+
+{
+  "name": "Client Société Maghreb",
+  "email": "contact@maghreb.tn",
+  "phone": "+216 72 333 444"
+}
+
+@custId = {{createCustomer.response.body.data.id}}
+
+### 3.3 Détail client
+GET {{baseUrl}}/customers/{{custId}}
+Authorization: Bearer {{tokenAlpha}}
+
+### 3.4 Test 404 inter-commerces (Gamma tente de modifier le client de Alpha -> 404)
+PUT {{baseUrl}}/customers/{{custId}}
+Authorization: Bearer {{tokenGamma}}
+Content-Type: application/json
+
+{
+  "name": "Nom piraté"
+}
+
+### 3.5 Mise à jour client
+PUT {{baseUrl}}/customers/{{custId}}
+Authorization: Bearer {{tokenAlpha}}
+Content-Type: application/json
+
+{
+  "name": "Client Société Maghreb SA",
+  "email": "compta@maghreb.tn",
+  "phone": "+216 72 333 555"
+}
+
+### 3.6 Suppression client libre
+DELETE {{baseUrl}}/customers/{{custId}}
+Authorization: Bearer {{tokenAlpha}}
+
+
+### ==============================================================================
+### MODULE 4 : PRODUITS (/api/products)
+### ==============================================================================
+
+### 4.1 Liste paginée avec recherche et jointures
+GET {{baseUrl}}/products?page=1&limit=5&search=Smart
+Authorization: Bearer {{tokenAlpha}}
+
+### 4.2 Filtre stock bas
+GET {{baseUrl}}/products?lowStock=true
+Authorization: Bearer {{tokenAlpha}}
+
+### 4.3 Création d'un produit (avec création mouvement 'in' initial)
+# @name createProduct
+POST {{baseUrl}}/products
+Authorization: Bearer {{tokenAlpha}}
+Content-Type: application/json
+
+{
+  "name": "Écouteurs Sans Fil Pro",
+  "sku": "ECO-PRO-001",
+  "price": 149.99,
+  "cost": 80.00,
+  "stock": 25,
+  "min_stock": 5,
+  "description": "Écouteurs avec réduction active du bruit"
+}
+
+@prodId = {{createProduct.response.body.data.id}}
+
+### 4.4 Test doublon de SKU (doit renvoyer 409 SKU_ALREADY_EXISTS)
+POST {{baseUrl}}/products
+Authorization: Bearer {{tokenAlpha}}
+Content-Type: application/json
+
+{
+  "name": "Écouteurs Clone",
+  "sku": "ECO-PRO-001",
+  "price": 99.00,
+  "stock": 10
+}
+
+### 4.5 Test catégorie invalide (categoryId appartenant à un autre commerce -> 422)
+POST {{baseUrl}}/products
+Authorization: Bearer {{tokenAlpha}}
+Content-Type: application/json
+
+{
+  "name": "Produit Erreur Cat",
+  "sku": "ERR-CAT-999",
+  "price": 50.00,
+  "categoryId": 999999
+}
+
+### 4.6 Détail produit
+GET {{baseUrl}}/products/{{prodId}}
+Authorization: Bearer {{tokenAlpha}}
+
+### 4.7 Test 404 inter-commerces (Gamma tente de lire le produit de Alpha -> 404)
+GET {{baseUrl}}/products/{{prodId}}
+Authorization: Bearer {{tokenGamma}}
+
+### 4.8 Mise à jour produit
+PUT {{baseUrl}}/products/{{prodId}}
+Authorization: Bearer {{tokenAlpha}}
+Content-Type: application/json
+
+{
+  "name": "Écouteurs Sans Fil Pro V2",
+  "sku": "ECO-PRO-001",
+  "price": 139.99,
+  "cost": 75.00,
+  "stock": 30,
+  "min_stock": 8
+}
+
+### 4.9 Suppression produit libre
+DELETE {{baseUrl}}/products/{{prodId}}
+Authorization: Bearer {{tokenAlpha}}
+
+### 4.10 Test suppression produit lié à des ventes (Produit 1 -> 409 PRODUCT_HAS_SALES)
+DELETE {{baseUrl}}/products/1
+Authorization: Bearer {{tokenAlpha}}
+
+
+### ==============================================================================
+### MODULE 5 : UTILISATEURS (/api/users) - ADMIN UNIQUEMENT
+### ==============================================================================
+
+### 5.1 Liste des collaborateurs
+GET {{baseUrl}}/users
+Authorization: Bearer {{tokenAlpha}}
+
+### 5.2 Création d'un collaborateur staff
+# @name createUser
+POST {{baseUrl}}/users
+Authorization: Bearer {{tokenAlpha}}
+Content-Type: application/json
+
+{
+  "firstName": "Sami",
+  "lastName": "Ben Ali",
+  "email": "sami.staff@alpha.com",
+  "password": "Password123!",
+  "role": "staff"
+}
+
+@newUserId = {{createUser.response.body.data.id}}
+
+### 5.3 Mise à jour collaborateur
+PUT {{baseUrl}}/users/{{newUserId}}
+Authorization: Bearer {{tokenAlpha}}
+Content-Type: application/json
+
+{
+  "firstName": "Sami",
+  "lastName": "Ben Ali Modifié",
+  "role": "staff",
+  "isActive": true
+}
+
+### 5.4 Test tentative de changer son propre rôle (Admin tente de s'auto-dégrader -> 400)
+PUT {{baseUrl}}/users/1
+Authorization: Bearer {{tokenAlpha}}
+Content-Type: application/json
+
+{
+  "firstName": "Alice",
+  "lastName": "Durand",
+  "role": "staff",
+  "isActive": true
+}
+
+### 5.5 Test tentative de s'auto-supprimer (Admin tente de se supprimer -> 400)
+DELETE {{baseUrl}}/users/1
+Authorization: Bearer {{tokenAlpha}}
+
+### 5.6 Test 404 inter-commerces (Gamma tente de supprimer un utilisateur de Alpha -> 404)
+DELETE {{baseUrl}}/users/{{newUserId}}
+Authorization: Bearer {{tokenGamma}}
+
+### 5.7 Suppression collaborateur
+DELETE {{baseUrl}}/users/{{newUserId}}
+Authorization: Bearer {{tokenAlpha}}

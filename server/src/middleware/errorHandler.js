@@ -38,8 +38,23 @@ const errorHandler = (err, _req, res, _next) => {
     });
   }
 
-  // Erreur MySQL doublon (ex: email déjà utilisé)
+  // Erreur MySQL doublon (ex: email, SKU, catégorie déjà utilisé)
   if (err.code === 'ER_DUP_ENTRY') {
+    const msg = err.message || '';
+    if (msg.includes('uq_product_sku') || msg.includes('sku')) {
+      return res.status(409).json({
+        success: false,
+        error: 'SKU_ALREADY_EXISTS',
+        message: 'Ce SKU existe déjà pour votre commerce',
+      });
+    }
+    if (msg.includes('uq_cat_name')) {
+      return res.status(409).json({
+        success: false,
+        error: 'CATEGORY_ALREADY_EXISTS',
+        message: 'Une catégorie avec ce nom existe déjà',
+      });
+    }
     return res.status(409).json({
       success: false,
       error: 'EMAIL_ALREADY_USED',

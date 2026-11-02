@@ -19,6 +19,22 @@ const categoryRepository = {
     return rows[0] || null;
   },
 
+  async findByName(name, companyId) {
+    const [rows] = await pool.query(
+      'SELECT * FROM categories WHERE LOWER(name) = LOWER(?) AND company_id = ? LIMIT 1',
+      [name, companyId]
+    );
+    return rows[0] || null;
+  },
+
+  async countProducts(id, companyId) {
+    const [rows] = await pool.query(
+      'SELECT COUNT(*) AS count FROM products WHERE category_id = ? AND company_id = ?',
+      [id, companyId]
+    );
+    return rows[0]?.count || 0;
+  },
+
   async create(companyId, name) {
     const [result] = await pool.query(
       'INSERT INTO categories (company_id, name) VALUES (?, ?)',

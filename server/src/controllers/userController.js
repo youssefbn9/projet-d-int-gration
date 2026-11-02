@@ -19,9 +19,9 @@ const userController = {
 
   async create(req, res, next) {
     try {
-      const { email, password, firstName, lastName, role } = req.body;
       const user = await userService.create({
-        companyId: req.user.companyId, email, password, firstName, lastName, role,
+        companyId: req.user.companyId,
+        ...req.body,
       });
       res.status(201).json({ success: true, data: user });
     } catch (err) { next(err); }
@@ -29,11 +29,11 @@ const userController = {
 
   async update(req, res, next) {
     try {
-      const { firstName, lastName, role, isActive } = req.body;
       const user = await userService.update(
         parseInt(req.params.id, 10),
         req.user.companyId,
-        { firstName, lastName, role, isActive }
+        req.user.userId,
+        req.body
       );
       res.json({ success: true, data: user });
     } catch (err) { next(err); }

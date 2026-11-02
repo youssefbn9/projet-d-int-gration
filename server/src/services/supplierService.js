@@ -27,6 +27,14 @@ const supplierService = {
 
   async remove(id, companyId) {
     await this.getById(id, companyId);
+    const productCount = await supplierRepository.countProducts(id, companyId);
+    if (productCount > 0) {
+      throw new AppError(
+        'Impossible de supprimer ce fournisseur car des produits lui sont associés',
+        409,
+        'SUPPLIER_HAS_PRODUCTS'
+      );
+    }
     await supplierRepository.remove(id, companyId);
   },
 };

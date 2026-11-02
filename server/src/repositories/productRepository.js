@@ -2,33 +2,82 @@
 
 const pool = require('../config/db');
 
+function formatProductRow(p) {
+  if (!p) return null;
+  const unitPrice = parseFloat(p.unit_price) || 0;
+  const cost = parseFloat(p.cost) || 0;
+  const stockQty = parseInt(p.stock_quantity, 10) || 0;
+  const stockMin = parseInt(p.stock_min, 10) || 0;
+
+  return {
+    ...p,
+    unit_price: unitPrice,
+    price: unitPrice,
+    cost,
+    stock_quantity: stockQty,
+    stock: stockQty,
+    stock_min: stockMin,
+    min_stock: stockMin,
+  };
+}
+
 const productRepository = {
-  /** Liste tous les produits du commerce avec catégorie et fournisseur */
-  async findAll(companyId, { search, categoryId, lowStock } = {}) {
-    let sql = `
+  /**
+   * Liste paginée des produits avec filtres
+   */
+  async findPaginated(companyId, { search, categoryId, lowStock, page = 1, limit = 10 } = {}) {
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.max(1, parseInt(limit, 10) || 10);
+    const offset = (pageNum - 1) * limitNum;
+
+    let whereSql = ' WHERE p.company_id = ?';
+    const params = [companyId];
+
+    if (search && search.trim()) {
+      whereSql += ' AND (LOWER(p.name) LIKE LOWER(?) OR LOWER(p.sku) LIKE LOWER(?))';
+      params.push(`%${search.trim()}%`, `%${search.trim()}%`);
+    }
+
+    if (categoryId) {
+      whereSql += ' AND p.category_id = ?';
+      params.push(parseInt(categoryId, 10));
+    }
+
+    if (lowStock === true || lowStock === 'true' || lowStock === '1' || lowStock === 1) {
+      whereSql += ' AND p.stock_quantity <= p.stock_min';
+    }
+
+    // Compte total
+    const [countRows] = await pool.query(
+      `SELECT COUNT(*) AS total FROM products p ${whereSql}`,
+      params
+    );
+    const total = countRows[0]?.total || 0;
+    const totalPages = Math.ceil(total / limitNum) || 1;
+
+    // Données paginées
+    const dataSql = `
       SELECT p.*, c.name AS category_name, s.name AS supplier_name
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
       LEFT JOIN suppliers s  ON p.supplier_id  = s.id
-      WHERE p.company_id = ?
+      ${whereSql}
+      ORDER BY p.id DESC
+      LIMIT ? OFFSET ?
     `;
-    const params = [companyId];
 
-    if (search) {
-      sql += ' AND (p.name LIKE ? OR p.sku LIKE ?)';
-      params.push(`%${search}%`, `%${search}%`);
-    }
-    if (categoryId) {
-      sql += ' AND p.category_id = ?';
-      params.push(categoryId);
-    }
-    if (lowStock === 'true' || lowStock === true) {
-      sql += ' AND p.stock_quantity <= p.stock_min';
-    }
+    const [rows] = await pool.query(dataSql, [...params, limitNum, offset]);
+    const items = rows.map(formatProductRow);
 
-    sql += ' ORDER BY p.name ASC';
-    const [rows] = await pool.query(sql, params);
-    return rows;
+    return {
+      items,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        totalPages,
+      },
+    };
   },
 
   async findById(id, companyId) {
@@ -40,53 +89,108 @@ const productRepository = {
        WHERE p.id = ? AND p.company_id = ? LIMIT 1`,
       [id, companyId]
     );
-    return rows[0] || null;
+    return formatProductRow(rows[0]);
   },
 
-  /** SELECT ... FOR UPDATE dans une transaction existante */
-  async findByIdForUpdate(conn, id, companyId) {
-    const [rows] = await conn.query(
-      'SELECT * FROM products WHERE id = ? AND company_id = ? LIMIT 1 FOR UPDATE',
-      [id, companyId]
+  async findBySku(sku, companyId) {
+    const [rows] = await pool.query(
+      'SELECT * FROM products WHERE LOWER(sku) = LOWER(?) AND company_id = ? LIMIT 1',
+      [sku.trim(), companyId]
     );
-    return rows[0] || null;
+    return formatProductRow(rows[0]);
   },
 
-  async create({ companyId, categoryId, supplierId, sku, name, description, unitPrice, stockQuantity, stockMin, imageUrl }) {
-    const [result] = await pool.query(
-      'INSERT INTO products (company_id, category_id, supplier_id, sku, name, description, unit_price, stock_quantity, stock_min, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [companyId, categoryId || null, supplierId || null, sku, name, description || null, unitPrice, stockQuantity, stockMin, imageUrl || null]
+  async countSales(id) {
+    const [rows] = await pool.query(
+      'SELECT COUNT(*) AS count FROM sale_items WHERE product_id = ?',
+      [id]
     );
-    return result.insertId;
+    return rows[0]?.count || 0;
+  },
+
+  /**
+   * Création avec mouvement de stock initial dans la même transaction
+   */
+  async createWithInitialStock({ companyId, userId, categoryId, supplierId, sku, name, description, unitPrice, cost, stockQuantity, stockMin, imageUrl }) {
+    const conn = await pool.getConnection();
+    try {
+      await conn.beginTransaction();
+
+      const [res] = await conn.query(
+        `INSERT INTO products (company_id, category_id, supplier_id, sku, name, description, unit_price, cost, stock_quantity, stock_min, image_url)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          companyId,
+          categoryId || null,
+          supplierId || null,
+          sku.trim(),
+          name.trim(),
+          description || null,
+          unitPrice,
+          cost || 0,
+          stockQuantity,
+          stockMin,
+          imageUrl || null,
+        ]
+      );
+      const productId = res.insertId;
+
+      if (stockQuantity > 0) {
+        await conn.query(
+          `INSERT INTO stock_movements (company_id, product_id, user_id, type, quantity, reason)
+           VALUES (?, ?, ?, 'in', ?, 'Stock initial')`,
+          [companyId, productId, userId, stockQuantity]
+        );
+      }
+
+      await conn.commit();
+      return productId;
+    } catch (err) {
+      await conn.rollback();
+      throw err;
+    } finally {
+      conn.release();
+    }
   },
 
   async update(id, companyId, fields) {
     const [result] = await pool.query(
-      'UPDATE products SET category_id=?, supplier_id=?, sku=?, name=?, description=?, unit_price=?, stock_quantity=?, stock_min=?, image_url=? WHERE id=? AND company_id=?',
+      `UPDATE products
+       SET category_id=?, supplier_id=?, sku=?, name=?, description=?, unit_price=?, cost=?, stock_quantity=?, stock_min=?, image_url=?
+       WHERE id=? AND company_id=?`,
       [
-        fields.categoryId || null, fields.supplierId || null,
-        fields.sku, fields.name, fields.description || null,
-        fields.unitPrice, fields.stockQuantity, fields.stockMin,
-        fields.imageUrl || null, id, companyId,
+        fields.categoryId || null,
+        fields.supplierId || null,
+        fields.sku.trim(),
+        fields.name.trim(),
+        fields.description || null,
+        fields.unitPrice,
+        fields.cost || 0,
+        fields.stockQuantity,
+        fields.stockMin,
+        fields.imageUrl || null,
+        id,
+        companyId,
       ]
     );
     return result.affectedRows;
   },
 
-  /** Met à jour seulement le stock (dans une transaction) */
-  async updateStock(conn, id, companyId, newQuantity) {
-    await conn.query(
-      'UPDATE products SET stock_quantity = ? WHERE id = ? AND company_id = ?',
-      [newQuantity, id, companyId]
-    );
-  },
-
   async remove(id, companyId) {
-    const [result] = await pool.query(
-      'DELETE FROM products WHERE id = ? AND company_id = ?',
-      [id, companyId]
-    );
-    return result.affectedRows;
+    const conn = await pool.getConnection();
+    try {
+      await conn.beginTransaction();
+      // Supprimer les mouvements de stock associés s'il n'y a pas de vente
+      await conn.query('DELETE FROM stock_movements WHERE product_id = ? AND company_id = ?', [id, companyId]);
+      const [res] = await conn.query('DELETE FROM products WHERE id = ? AND company_id = ?', [id, companyId]);
+      await conn.commit();
+      return res.affectedRows;
+    } catch (err) {
+      await conn.rollback();
+      throw err;
+    } finally {
+      conn.release();
+    }
   },
 
   /** Statistiques de stock pour le dashboard */

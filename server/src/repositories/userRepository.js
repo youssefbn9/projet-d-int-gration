@@ -9,10 +9,10 @@ const userRepository = {
     return rows[0] || null;
   },
 
-  /** Trouve un utilisateur par id dans le commerce donné */
+  /** Trouve un utilisateur par id dans le commerce donné (sans password) */
   async findById(id, companyId) {
     const [rows] = await pool.query(
-      'SELECT id, company_id, email, first_name, last_name, role, is_active, created_at FROM users WHERE id = ? AND company_id = ? LIMIT 1',
+      'SELECT id, company_id, email, first_name, last_name, role, is_active, created_at, updated_at FROM users WHERE id = ? AND company_id = ? LIMIT 1',
       [id, companyId]
     );
     return rows[0] || null;
@@ -21,17 +21,25 @@ const userRepository = {
   /** Liste tous les utilisateurs du commerce */
   async findAll(companyId) {
     const [rows] = await pool.query(
-      'SELECT id, company_id, email, first_name, last_name, role, is_active, created_at FROM users WHERE company_id = ? ORDER BY created_at DESC',
+      'SELECT id, company_id, email, first_name, last_name, role, is_active, created_at, updated_at FROM users WHERE company_id = ? ORDER BY created_at DESC',
       [companyId]
     );
     return rows;
+  },
+
+  async countSales(id) {
+    const [rows] = await pool.query(
+      'SELECT COUNT(*) AS count FROM sales WHERE user_id = ?',
+      [id]
+    );
+    return rows[0]?.count || 0;
   },
 
   /** Crée un utilisateur */
   async create({ companyId, email, passwordHash, firstName, lastName, role }) {
     const [result] = await pool.query(
       'INSERT INTO users (company_id, email, password, first_name, last_name, role) VALUES (?, ?, ?, ?, ?, ?)',
-      [companyId, email, passwordHash, firstName, lastName, role]
+      [companyId, email, passwordHash, firstName, lastName, role || 'staff']
     );
     return result.insertId;
   },
@@ -40,7 +48,7 @@ const userRepository = {
   async update(id, companyId, fields) {
     const [result] = await pool.query(
       'UPDATE users SET first_name = ?, last_name = ?, role = ?, is_active = ? WHERE id = ? AND company_id = ?',
-      [fields.firstName, fields.lastName, fields.role, fields.isActive, id, companyId]
+      [fields.firstName, fields.lastName, fields.role, fields.isActive ?? 1, id, companyId]
     );
     return result.affectedRows;
   },

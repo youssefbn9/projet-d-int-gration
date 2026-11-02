@@ -5,8 +5,8 @@ const productService = require('../services/productService');
 const productController = {
   async getAll(req, res, next) {
     try {
-      const products = await productService.getAll(req.user.companyId, req.query);
-      res.json({ success: true, data: products });
+      const data = await productService.getAll(req.user.companyId, req.query);
+      res.json({ success: true, data });
     } catch (err) { next(err); }
   },
 
@@ -19,7 +19,7 @@ const productController = {
 
   async create(req, res, next) {
     try {
-      const product = await productService.create(req.user.companyId, req.body);
+      const product = await productService.create(req.user.companyId, req.user.userId, req.body);
       res.status(201).json({ success: true, data: product });
     } catch (err) { next(err); }
   },

@@ -19,6 +19,14 @@ const supplierRepository = {
     return rows[0] || null;
   },
 
+  async countProducts(id, companyId) {
+    const [rows] = await pool.query(
+      'SELECT COUNT(*) AS count FROM products WHERE supplier_id = ? AND company_id = ?',
+      [id, companyId]
+    );
+    return rows[0]?.count || 0;
+  },
+
   async create({ companyId, name, email, phone, address }) {
     const [result] = await pool.query(
       'INSERT INTO suppliers (company_id, name, email, phone, address) VALUES (?, ?, ?, ?, ?)',

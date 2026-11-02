@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS categories (
   company_id INT UNSIGNED NOT NULL,
   name       VARCHAR(100) NOT NULL,
   created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_cat_name (company_id, name),
   CONSTRAINT fk_cat_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
@@ -50,6 +51,18 @@ CREATE TABLE IF NOT EXISTS suppliers (
   CONSTRAINT fk_sup_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+-- ── Clients ─────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS customers (
+  id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  company_id INT UNSIGNED NOT NULL,
+  name       VARCHAR(120) NOT NULL,
+  email      VARCHAR(191),
+  phone      VARCHAR(30),
+  created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_cust_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
 -- ── Produits ────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS products (
   id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -60,6 +73,7 @@ CREATE TABLE IF NOT EXISTS products (
   name            VARCHAR(200)   NOT NULL,
   description     TEXT,
   unit_price      DECIMAL(12,2)  NOT NULL DEFAULT 0.00,
+  cost            DECIMAL(12,2)  NOT NULL DEFAULT 0.00,
   stock_quantity  INT            NOT NULL DEFAULT 0,
   stock_min       INT            NOT NULL DEFAULT 0,
   image_url       VARCHAR(500),
@@ -76,12 +90,14 @@ CREATE TABLE IF NOT EXISTS sales (
   id           INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   company_id   INT UNSIGNED   NOT NULL,
   user_id      INT UNSIGNED   NOT NULL,
+  customer_id  INT UNSIGNED   NULL,
   total_amount DECIMAL(14,2)  NOT NULL DEFAULT 0.00,
   status       ENUM('completed','cancelled') NOT NULL DEFAULT 'completed',
   note         TEXT,
   created_at   DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT fk_sale_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE,
-  CONSTRAINT fk_sale_user    FOREIGN KEY (user_id)    REFERENCES users(id)     ON DELETE RESTRICT
+  CONSTRAINT fk_sale_company  FOREIGN KEY (company_id)  REFERENCES companies(id)  ON DELETE CASCADE,
+  CONSTRAINT fk_sale_user     FOREIGN KEY (user_id)     REFERENCES users(id)      ON DELETE RESTRICT,
+  CONSTRAINT fk_sale_customer FOREIGN KEY (customer_id) REFERENCES customers(id)  ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
 -- ── Lignes de vente ─────────────────────────────────────────────────────────
@@ -102,7 +118,7 @@ CREATE TABLE IF NOT EXISTS stock_movements (
   company_id   INT UNSIGNED NOT NULL,
   product_id   INT UNSIGNED NOT NULL,
   user_id      INT UNSIGNED NOT NULL,
-  type         ENUM('entry','exit','adjustment') NOT NULL,
+  type         ENUM('entry','exit','adjustment','in','out') NOT NULL,
   quantity     INT          NOT NULL,   -- positif = entrée, négatif = sortie
   reason       VARCHAR(255),
   sale_id      INT UNSIGNED,            -- nullable, lié si mouvement de vente

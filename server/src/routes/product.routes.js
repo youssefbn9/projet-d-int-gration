@@ -10,41 +10,64 @@ const validate = require('../middleware/validate');
 const router = Router();
 router.use(authenticate);
 
-const productSchema = z.object({
-  categoryId: z.number().int().positive().nullable().optional(),
-  supplierId: z.number().int().positive().nullable().optional(),
-  sku: z.string().min(1).max(80),
-  name: z.string().min(1).max(200),
-  description: z.string().optional(),
-  unitPrice: z.number().nonnegative(),
-  stockQuantity: z.number().int().min(0).default(0),
-  stockMin: z.number().int().min(0).default(0),
-  imageUrl: z.string().url().optional().nullable(),
-});
+const productSchema = z
+  .object({
+    name: z.string().min(1, 'Le nom est requis').max(200),
+    sku: z.string().min(1, 'Le SKU est requis').max(80),
+    price: z.number().nonnegative('Le prix doit être positif ou nul').optional(),
+    unitPrice: z.number().nonnegative('Le prix doit être positif ou nul').optional(),
+    cost: z.number().nonnegative('Le coût doit être positif ou nul').optional().default(0),
+    stock: z.number().int().min(0, 'Le stock doit être un entier positif ou nul').optional(),
+    stockQuantity: z.number().int().min(0, 'Le stock doit être un entier positif ou nul').optional(),
+    min_stock: z.number().int().min(0, 'Le seuil doit être un entier positif ou nul').optional(),
+    stockMin: z.number().int().min(0, 'Le seuil doit être un entier positif ou nul').optional(),
+    categoryId: z.number().int().positive().nullable().optional(),
+    supplierId: z.number().int().positive().nullable().optional(),
+    description: z.string().optional().nullable().or(z.literal('')),
+    imageUrl: z.string().optional().nullable().or(z.literal('')),
+  })
+  .refine(
+    (data) => data.price !== undefined || data.unitPrice !== undefined,
+    {
+      message: 'Le prix est requis',
+      path: ['price'],
+    }
+  );
 
 /**
  * @swagger
  * /products:
  *   get:
  *     tags: [Produits]
- *     summary: Liste des produits du commerce
+ *     summary: Liste paginée des produits du commerce
  *     parameters:
  *       - in: query
  *         name: search
  *         schema: { type: string }
+ *         description: Recherche par nom ou SKU
  *       - in: query
  *         name: categoryId
  *         schema: { type: integer }
+ *         description: Filtrer par identifiant de catégorie
  *       - in: query
  *         name: lowStock
  *         schema: { type: boolean }
+ *         description: Filtrer par stock faible (stock <= seuil)
+ *       - in: query
+ *         name: page
+ *         schema: { type: integer, default: 1 }
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer, default: 10 }
  *     responses:
- *       200: { description: Liste des produits }
+ *       200: { description: Liste des produits paginée (items + pagination) }
  *   post:
  *     tags: [Produits]
  *     summary: Créer un produit (admin)
  *     responses:
  *       201: { description: Produit créé }
+ *       409: { description: SKU déjà existant }
+ *       422: { description: Catégorie ou Fournisseur invalide pour ce commerce }
  */
 router.get('/', productController.getAll);
 router.get('/stats', productController.getStats);
@@ -74,6 +97,9 @@ router.post('/', requireRole('admin'), validate(productSchema), productControlle
  *         schema: { type: integer }
  *     responses:
  *       200: { description: Produit mis à jour }
+ *       404: { description: Introuvable }
+ *       409: { description: SKU déjà existant }
+ *       422: { description: Catégorie ou Fournisseur invalide }
  *   delete:
  *     tags: [Produits]
  *     summary: Supprimer un produit (admin)
@@ -84,6 +110,8 @@ router.post('/', requireRole('admin'), validate(productSchema), productControlle
  *         schema: { type: integer }
  *     responses:
  *       200: { description: Produit supprimé }
+ *       404: { description: Introuvable }
+ *       409: { description: Produit lié à des ventes }
  */
 router.get('/:id', productController.getById);
 router.put('/:id', requireRole('admin'), validate(productSchema), productController.update);

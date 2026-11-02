@@ -1,15 +1,13 @@
 import api from './api';
 
+export { default as api } from './api';
 export { authService } from './auth.service';
-
-export const productService = {
-  getAll: (params) => api.get('/products', { params }),
-  getById: (id) => api.get(`/products/${id}`),
-  create: (data) => api.post('/products', data),
-  update: (id, data) => api.put(`/products/${id}`, data),
-  remove: (id) => api.delete(`/products/${id}`),
-  getStats: () => api.get('/products/stats'),
-};
+export { productsService, default as productService } from './products.service';
+export { categoriesService, default as categoryService } from './categories.service';
+export { suppliersService, default as supplierService } from './suppliers.service';
+export { customersService, default as customerService } from './customers.service';
+export { usersService, default as userService } from './users.service';
+export { stockService, default as movementService } from './stock.service';
 
 export const saleService = {
   getAll: (params) => api.get('/sales', { params }),
@@ -18,29 +16,4 @@ export const saleService = {
   getDashboard: () => api.get('/sales/dashboard'),
 };
 
-export const categoryService = {
-  getAll: () => api.get('/categories'),
-  create: (name) => api.post('/categories', { name }),
-  update: (id, name) => api.put(`/categories/${id}`, { name }),
-  remove: (id) => api.delete(`/categories/${id}`),
-};
-
-export const supplierService = {
-  getAll: () => api.get('/suppliers'),
-  getById: (id) => api.get(`/suppliers/${id}`),
-  create: (data) => api.post('/suppliers', data),
-  update: (id, data) => api.put(`/suppliers/${id}`, data),
-  remove: (id) => api.delete(`/suppliers/${id}`),
-};
-
-export const userService = {
-  getAll: () => api.get('/users'),
-  create: (data) => api.post('/users', data),
-  update: (id, data) => api.put(`/users/${id}`, data),
-  remove: (id) => api.delete(`/users/${id}`),
-};
-
-export const movementService = {
-  getAll: (params) => api.get('/movements', { params }),
-  create: (data) => api.post('/movements', data),
-};
+export const salesService = saleService;
