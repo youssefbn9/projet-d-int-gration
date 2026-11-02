@@ -8,12 +8,6 @@ export { suppliersService, default as supplierService } from './suppliers.servic
 export { customersService, default as customerService } from './customers.service';
 export { usersService, default as userService } from './users.service';
 export { stockService, default as movementService } from './stock.service';
-
-export const saleService = {
-  getAll: (params) => api.get('/sales', { params }),
-  getById: (id) => api.get(`/sales/${id}`),
-  create: (data) => api.post('/sales', data),
-  getDashboard: () => api.get('/sales/dashboard'),
-};
-
-export const salesService = saleService;
+export { salesService, saleService, default as salesServiceDefault } from './sales.service';
+export { dashboardService } from './dashboard.service';
+export { forecastService } from './forecast.service';

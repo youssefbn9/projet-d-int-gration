@@ -3,15 +3,14 @@ import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './components/Toast';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
+
 import Login from './pages/Login';
-import DashboardPage from './pages/DashboardPage';
-import ProductsPage from './pages/ProductsPage';
-import SalesPage from './pages/SalesPage';
-import DetailVentePage from './pages/DetailVentePage';
-import ClientsFournisseursPage from './pages/ClientsFournisseursPage';
-import PrevisionsPage from './pages/PrevisionsPage';
-import SuppliersPage from './pages/SuppliersPage';
-import CategoriesPage from './pages/CategoriesPage';
+import Dashboard from './pages/Dashboard';
+import Produits from './pages/Produits';
+import ClientsFournisseurs from './pages/ClientsFournisseurs';
+import Ventes from './pages/Ventes';
+import DetailVente from './pages/DetailVente';
+import Previsions from './pages/Previsions';
 import MovementsPage from './pages/MovementsPage';
 import UsersPage from './pages/UsersPage';
 
@@ -27,22 +26,24 @@ export default function App() {
             {/* Routes protégées sous le Layout */}
             <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/dashboard" element={<Dashboard />} />
 
-              {/* Routes cœur StockPro */}
-              <Route path="/produits" element={<ProductsPage />} />
-              <Route path="/clients-fournisseurs" element={<ClientsFournisseursPage />} />
-              <Route path="/ventes" element={<SalesPage />} />
-              <Route path="/ventes/:id" element={<DetailVentePage />} />
-              <Route path="/previsions" element={<PrevisionsPage />} />
-
-              {/* Alias & modules complémentaires */}
-              <Route path="/products" element={<Navigate to="/produits" replace />} />
-              <Route path="/sales" element={<Navigate to="/ventes" replace />} />
-              <Route path="/suppliers" element={<SuppliersPage />} />
-              <Route path="/categories" element={<CategoriesPage />} />
+              {/* Modules Cœur StockPro */}
+              <Route path="/produits" element={<Produits />} />
+              <Route path="/clients-fournisseurs" element={<ClientsFournisseurs />} />
+              <Route path="/ventes" element={<Ventes />} />
+              <Route path="/ventes/:id" element={<DetailVente />} />
+              <Route path="/previsions" element={<Previsions />} />
               <Route path="/movements" element={<MovementsPage />} />
               <Route path="/users" element={<UsersPage />} />
+
+              {/* Redirections et alias rétrocompatibles */}
+              <Route path="/products" element={<Navigate to="/produits" replace />} />
+              <Route path="/sales" element={<Navigate to="/ventes" replace />} />
+              <Route path="/sales/:id" element={<Navigate to="/ventes/:id" replace />} />
+              <Route path="/categories" element={<Navigate to="/clients-fournisseurs" replace />} />
+              <Route path="/suppliers" element={<Navigate to="/clients-fournisseurs" replace />} />
+              <Route path="/customers" element={<Navigate to="/clients-fournisseurs" replace />} />
             </Route>
 
             {/* Redirection par défaut */}

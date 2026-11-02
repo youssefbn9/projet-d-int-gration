@@ -330,3 +330,25 @@ Authorization: Bearer {{tokenGamma}}
 DELETE {{baseUrl}}/users/{{newUserId}}
 Authorization: Bearer {{tokenAlpha}}
 
+
+### ==============================================================================
+### MODULE 6 : PRÉVISIONS ML & VENTES (/api/forecast, /api/sales, /api/dashboard)
+### ==============================================================================
+
+### 6.1 Liste des alertes de rupture imminente (< 7 jours)
+GET {{baseUrl}}/forecast/alerts
+Authorization: Bearer {{tokenAlpha}}
+
+### 6.2 Prévision 7 jours pour un produit spécifique (avec historique 30 jours)
+GET {{baseUrl}}/forecast/products/1
+Authorization: Bearer {{tokenAlpha}}
+
+### 6.3 Test 404 produit d'un autre commerce
+GET {{baseUrl}}/forecast/products/1
+Authorization: Bearer {{tokenGamma}}
+
+### 6.4 Statistiques du Dashboard
+GET {{baseUrl}}/dashboard/stats
+Authorization: Bearer {{tokenAlpha}}
+
+

@@ -16,6 +16,7 @@ const saleRoutes = require('./routes/sale.routes');
 const customerRoutes = require('./routes/customer.routes');
 const stockRoutes = require('./routes/stock.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
+const forecastRoutes = require('./routes/forecast.routes');
 const { categoryRouter, supplierRouter, movementRouter } = require('./routes/misc.routes');
 
 const app = express();
@@ -38,6 +39,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/sales', saleRoutes);
 app.use('/api/stock', stockRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/forecast', forecastRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/categories', categoryRouter);
 app.use('/api/suppliers', supplierRouter);

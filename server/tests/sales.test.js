@@ -259,3 +259,4 @@ describe('PASSE 4/10: Ventes transactionnelles, stock et statistiques', () => {
     expect(resDashboard.body.data).toHaveProperty('topProducts');
   });
 });
+
