@@ -59,7 +59,7 @@ const userService = {
 
     await this.getById(id, companyId);
 
-    const salesCount = await userRepository.countSales(id);
+    const salesCount = await userRepository.countSales(id, companyId);
     if (salesCount > 0) {
       throw new AppError(
         'Impossible de supprimer cet utilisateur car des ventes lui sont associées',

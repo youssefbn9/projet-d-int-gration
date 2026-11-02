@@ -131,3 +131,4 @@ CREATE TABLE IF NOT EXISTS stock_movements (
 CREATE INDEX idx_products_company    ON products(company_id);
 CREATE INDEX idx_sales_company_date  ON sales(company_id, created_at);
 CREATE INDEX idx_movements_company   ON stock_movements(company_id, created_at);
+

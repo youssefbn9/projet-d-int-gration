@@ -127,3 +127,4 @@ describe('Tests d\'Authentification & Sécurité (server/tests/auth.test.js)', (
     expect(res.body.data.email).toBe(validEmail);
   });
 });
+

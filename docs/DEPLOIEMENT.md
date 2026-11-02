@@ -129,3 +129,4 @@ Le fichier `client/vercel.json` présent à la racine du client assure la rééc
 4. Rendez-vous sur **Ventes** et effectuez une nouvelle transaction :
    - Le stock du produit sélectionné diminue instantanément dans **Produits**.
 5. Rendez-vous sur **Prévisions** pour visualiser les projections à J+7 calculées par la régression linéaire.
+

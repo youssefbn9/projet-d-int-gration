@@ -27,10 +27,10 @@ const userRepository = {
     return rows;
   },
 
-  async countSales(id) {
+  async countSales(id, companyId) {
     const [rows] = await pool.query(
-      'SELECT COUNT(*) AS count FROM sales WHERE user_id = ?',
-      [id]
+      'SELECT COUNT(*) AS count FROM sales WHERE user_id = ? AND company_id = ?',
+      [id, companyId]
     );
     return rows[0]?.count || 0;
   },

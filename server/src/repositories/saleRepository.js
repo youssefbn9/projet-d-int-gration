@@ -107,8 +107,8 @@ const saleRepository = {
 
       // 4. Mettre à jour le total calculé côté serveur
       await conn.query(
-        'UPDATE sales SET total_amount = ? WHERE id = ?',
-        [calculatedTotal.toFixed(2), saleId]
+        'UPDATE sales SET total_amount = ? WHERE id = ? AND company_id = ?',
+        [calculatedTotal.toFixed(2), saleId, companyId]
       );
 
       await conn.commit();

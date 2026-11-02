@@ -100,10 +100,10 @@ const productRepository = {
     return formatProductRow(rows[0]);
   },
 
-  async countSales(id) {
+  async countSales(id, companyId) {
     const [rows] = await pool.query(
-      'SELECT COUNT(*) AS count FROM sale_items WHERE product_id = ?',
-      [id]
+      'SELECT COUNT(*) AS count FROM sale_items si JOIN sales s ON si.sale_id = s.id WHERE si.product_id = ? AND s.company_id = ?',
+      [id, companyId]
     );
     return rows[0]?.count || 0;
   },
