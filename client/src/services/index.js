@@ -1,5 +1,3 @@
-import api from './api';
-
 export { default as api } from './api';
 export { authService } from './auth.service';
 export { productsService, default as productService } from './products.service';

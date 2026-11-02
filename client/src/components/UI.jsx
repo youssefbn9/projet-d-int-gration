@@ -70,20 +70,10 @@ export function ConfirmModal({ message, onConfirm, onCancel, loading }) {
       onClose={onCancel}
       footer={
         <>
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={onCancel}
-            disabled={loading}
-          >
+          <button type="button" className="btn btn-secondary" onClick={onCancel} disabled={loading}>
             Annuler
           </button>
-          <button
-            type="button"
-            className="btn btn-danger"
-            onClick={onConfirm}
-            disabled={loading}
-          >
+          <button type="button" className="btn btn-danger" onClick={onConfirm} disabled={loading}>
             {loading ? 'Suppression…' : 'Supprimer'}
           </button>
         </>

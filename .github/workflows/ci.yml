@@ -1,23 +1,23 @@
-name: StockPro CI
+name: StockPro CI/CD Pipeline
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, dev]
   pull_request:
-    branches: [main]
+    branches: [main, dev]
 
 jobs:
+  # ── Job 1 : Backend (API Express + MySQL 8 Service) ─────────────────────────
   server:
-    name: Backend – Lint & Tests
+    name: Backend Lint & Tests (MySQL 8)
     runs-on: ubuntu-latest
 
     services:
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_ROOT_PASSWORD: ''
           MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
-          MYSQL_DATABASE: stockpro
+          MYSQL_DATABASE: stockpro_test
         ports:
           - 3306:3306
         options: >-
@@ -31,38 +31,36 @@ jobs:
         working-directory: server
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Récupérer le code
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Configurer Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: 20
           cache: 'npm'
           cache-dependency-path: server/package-lock.json
 
       - name: Installer les dépendances
         run: npm ci
 
-      - name: Créer le schéma
-        run: mysql -h 127.0.0.1 -u root stockpro < sql/schema.sql
-
-      - name: Lint ESLint
+      - name: Vérifier le style et la qualité (ESLint)
         run: npm run lint
 
-      - name: Tests Jest
-        run: npm test
+      - name: Exécuter les tests avec couverture Jest & Supertest
         env:
           NODE_ENV: test
           DB_HOST: 127.0.0.1
           DB_PORT: 3306
           DB_USER: root
           DB_PASSWORD: ''
-          DB_NAME: stockpro
-          JWT_SECRET: ci_test_secret_key_256_bits_long
-          JWT_EXPIRES_IN: 1h
+          DB_NAME: stockpro_test
+          JWT_SECRET: ci_secret_key_for_stockpro_super_secure_jwt
+        run: npm test -- --coverage
 
+  # ── Job 2 : Frontend (React Vite + ESLint + Build) ──────────────────────────
   client:
-    name: Frontend – Lint & Build
+    name: Frontend Lint & Production Build
     runs-on: ubuntu-latest
 
     defaults:
@@ -70,20 +68,23 @@ jobs:
         working-directory: client
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Récupérer le code
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Configurer Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: 20
           cache: 'npm'
           cache-dependency-path: client/package-lock.json
 
       - name: Installer les dépendances
         run: npm ci
 
-      - name: Lint ESLint
+      - name: Vérifier le style de code (ESLint)
         run: npm run lint
 
-      - name: Build Vite
+      - name: Compiler pour la production (Vite Build)
+        env:
+          VITE_API_URL: /api
         run: npm run build

@@ -1,10 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import {
-  productsService,
-  categoriesService,
-  suppliersService,
-  stockService,
-} from '../services';
+import { productsService, categoriesService, suppliersService, stockService } from '../services';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
 import DataTable from '../components/DataTable';
@@ -13,15 +8,7 @@ import FormField from '../components/FormField';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { Modal, Spinner } from '../components/UI';
 import { formatCurrency, formatDateTime } from '../utils/format';
-import {
-  Plus,
-  Pencil,
-  Trash2,
-  Search,
-  History,
-  SlidersHorizontal,
-  X,
-} from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, History, SlidersHorizontal, X } from 'lucide-react';
 
 const INITIAL_FORM = {
   name: '',
@@ -108,7 +95,9 @@ export default function Produits() {
       const resData = res.data.data;
       if (resData && Array.isArray(resData.items)) {
         setProducts(resData.items);
-        setPagination(resData.pagination || { page, limit, total: resData.items.length, totalPages: 1 });
+        setPagination(
+          resData.pagination || { page, limit, total: resData.items.length, totalPages: 1 }
+        );
       } else if (Array.isArray(resData)) {
         setProducts(resData);
         setPagination({ page, limit, total: resData.length, totalPages: 1 });
@@ -135,13 +124,13 @@ export default function Produits() {
       errors.price = 'Le prix unitaire doit être supérieur ou égal à 0';
     }
     if (form.cost !== '' && (isNaN(Number(form.cost)) || Number(form.cost) < 0)) {
-      errors.cost = 'Le coût d\'achat doit être supérieur ou égal à 0';
+      errors.cost = "Le coût d'achat doit être supérieur ou égal à 0";
     }
     if (form.stock === '' || isNaN(Number(form.stock)) || Number(form.stock) < 0) {
       errors.stock = 'Le stock initial doit être un entier positif ou nul';
     }
     if (form.min_stock === '' || isNaN(Number(form.min_stock)) || Number(form.min_stock) < 0) {
-      errors.min_stock = 'Le seuil d\'alerte doit être un entier positif ou nul';
+      errors.min_stock = "Le seuil d'alerte doit être un entier positif ou nul";
     }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -272,7 +261,7 @@ export default function Produits() {
       setAdjustProduct(null);
       fetchProducts();
     } catch (err) {
-      setAdjustError(err.response?.data?.message || 'Erreur lors de l\'enregistrement du mouvement');
+      setAdjustError(err.response?.data?.message || "Erreur lors de l'enregistrement du mouvement");
     } finally {
       setAdjustSaving(false);
     }
@@ -286,7 +275,15 @@ export default function Produits() {
         <div>
           <div style={{ fontWeight: 600, color: 'var(--color-text)' }}>{p.name}</div>
           {p.description && (
-            <div className="text-muted text-xs" style={{ maxWidth: 260, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <div
+              className="text-muted text-xs"
+              style={{
+                maxWidth: 260,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
               {p.description}
             </div>
           )}
@@ -313,9 +310,7 @@ export default function Produits() {
       header: 'PRIX',
       className: 'text-right',
       render: (p) => (
-        <span style={{ fontWeight: 600 }}>
-          {formatCurrency(p.unit_price ?? p.price)}
-        </span>
+        <span style={{ fontWeight: 600 }}>{formatCurrency(p.unit_price ?? p.price)}</span>
       ),
     },
     {
@@ -405,7 +400,14 @@ export default function Produits() {
       {/* ── En-tête de page ───────────────────────────────────────────── */}
       <div className="page-header flex-between">
         <div>
-          <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-text)', letterSpacing: '-0.02em' }}>
+          <h2
+            style={{
+              fontSize: '24px',
+              fontWeight: 700,
+              color: 'var(--color-text)',
+              letterSpacing: '-0.02em',
+            }}
+          >
             Catalogue Produits
           </h2>
           <p className="text-muted" style={{ fontSize: '14px', marginTop: '4px' }}>
@@ -451,7 +453,10 @@ export default function Produits() {
           ))}
         </select>
 
-        <label className="flex-gap-2" style={{ cursor: 'pointer', userSelect: 'none', fontSize: '14px', alignItems: 'center' }}>
+        <label
+          className="flex-gap-2"
+          style={{ cursor: 'pointer', userSelect: 'none', fontSize: '14px', alignItems: 'center' }}
+        >
           <input
             type="checkbox"
             checked={lowStockOnly}
@@ -510,9 +515,17 @@ export default function Produits() {
             </>
           }
         >
-          <form id="product-form" onSubmit={handleSaveProduct} className="flex-col gap-4" noValidate>
+          <form
+            id="product-form"
+            onSubmit={handleSaveProduct}
+            className="flex-col gap-4"
+            noValidate
+          >
             {serverError && (
-              <div className="alert alert-danger" style={{ padding: '10px 12px', fontSize: '13px' }}>
+              <div
+                className="alert alert-danger"
+                style={{ padding: '10px 12px', fontSize: '13px' }}
+              >
                 {serverError}
               </div>
             )}
@@ -682,15 +695,15 @@ export default function Produits() {
                                 m.type === 'entry' || m.type === 'in'
                                   ? 'badge-success'
                                   : m.type === 'exit' || m.type === 'out'
-                                  ? 'badge-danger'
-                                  : 'badge-info'
+                                    ? 'badge-danger'
+                                    : 'badge-info'
                               }`}
                             >
                               {m.type === 'entry' || m.type === 'in'
                                 ? 'Entrée'
                                 : m.type === 'exit' || m.type === 'out'
-                                ? 'Sortie'
-                                : 'Ajustement'}
+                                  ? 'Sortie'
+                                  : 'Ajustement'}
                             </span>
                           </td>
                           <td className="text-right font-semibold">
@@ -736,7 +749,10 @@ export default function Produits() {
         >
           <form id="adjust-form" onSubmit={handleSaveAdjust} className="flex-col gap-4">
             {adjustError && (
-              <div className="alert alert-danger" style={{ padding: '10px 12px', fontSize: '13px' }}>
+              <div
+                className="alert alert-danger"
+                style={{ padding: '10px 12px', fontSize: '13px' }}
+              >
                 {adjustError}
               </div>
             )}
@@ -776,4 +792,3 @@ export default function Produits() {
     </div>
   );
 }
-

@@ -3,7 +3,7 @@
 const mysql = require('mysql2/promise');
 const env = require('./env');
 
-const pool = mysql.createPool({
+const poolConfig = {
   host: env.db.host,
   port: env.db.port,
   user: env.db.user,
@@ -13,7 +13,15 @@ const pool = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0,
   timezone: '+00:00',
-});
+};
+
+if (env.db.ssl) {
+  poolConfig.ssl = {
+    rejectUnauthorized: false,
+  };
+}
+
+const pool = mysql.createPool(poolConfig);
 
 const testConnection = async () => {
   const connection = await pool.getConnection();

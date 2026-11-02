@@ -24,3 +24,4 @@ const forecastController = {
 };
 
 module.exports = forecastController;
+

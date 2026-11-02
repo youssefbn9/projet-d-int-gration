@@ -90,7 +90,14 @@ export default function SalesPage() {
     <div className="flex-col gap-6">
       <div className="page-header flex-between">
         <div>
-          <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-text)', letterSpacing: '-0.02em' }}>
+          <h2
+            style={{
+              fontSize: '24px',
+              fontWeight: 700,
+              color: 'var(--color-text)',
+              letterSpacing: '-0.02em',
+            }}
+          >
             Gestion des Ventes
           </h2>
           <p className="text-muted" style={{ fontSize: '14px', marginTop: '4px' }}>
@@ -149,7 +156,10 @@ export default function SalesPage() {
                   <td>
                     {s.item_count} article{s.item_count > 1 ? 's' : ''}
                   </td>
-                  <td className="text-right" style={{ fontWeight: 700, color: 'var(--color-primary)' }}>
+                  <td
+                    className="text-right"
+                    style={{ fontWeight: 700, color: 'var(--color-primary)' }}
+                  >
                     {formatCurrency(s.total_amount)}
                   </td>
                   <td>{getSaleBadge(s.status)}</td>
@@ -185,15 +195,8 @@ export default function SalesPage() {
               >
                 Annuler
               </button>
-              <button
-                className="btn btn-primary"
-                form="sale-form"
-                type="submit"
-                disabled={saving}
-              >
-                {saving
-                  ? 'Traitement…'
-                  : `Valider la vente (${formatCurrency(computeTotal())})`}
+              <button className="btn btn-primary" form="sale-form" type="submit" disabled={saving}>
+                {saving ? 'Traitement…' : `Valider la vente (${formatCurrency(computeTotal())})`}
               </button>
             </>
           }

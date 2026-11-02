@@ -1,10 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import {
-  customersService,
-  suppliersService,
-  categoriesService,
-  usersService,
-} from '../services';
+import { customersService, suppliersService, categoriesService, usersService } from '../services';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
 import DataTable from '../components/DataTable';
@@ -12,15 +7,7 @@ import FormField from '../components/FormField';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { Modal, Spinner } from '../components/UI';
 import { formatDate } from '../utils/format';
-import {
-  Users,
-  Building,
-  Tag,
-  UserCheck,
-  Plus,
-  Pencil,
-  Trash2,
-} from 'lucide-react';
+import { Users, Building, Tag, UserCheck, Plus, Pencil, Trash2 } from 'lucide-react';
 
 export default function ClientsFournisseurs() {
   const { user } = useAuth();
@@ -96,7 +83,8 @@ export default function ClientsFournisseurs() {
     if (type === 'client') setFormData({ name: '', email: '', phone: '' });
     if (type === 'supplier') setFormData({ name: '', email: '', phone: '', address: '' });
     if (type === 'category') setFormData({ name: '' });
-    if (type === 'employee') setFormData({ firstName: '', lastName: '', email: '', password: '', role: 'staff' });
+    if (type === 'employee')
+      setFormData({ firstName: '', lastName: '', email: '', password: '', role: 'staff' });
   };
 
   const handleOpenEdit = (type, item) => {
@@ -104,8 +92,15 @@ export default function ClientsFournisseurs() {
     setModalMode('edit');
     setEditingItem(item);
     setFormErrors({});
-    if (type === 'client') setFormData({ name: item.name || '', email: item.email || '', phone: item.phone || '' });
-    if (type === 'supplier') setFormData({ name: item.name || '', email: item.email || '', phone: item.phone || '', address: item.address || '' });
+    if (type === 'client')
+      setFormData({ name: item.name || '', email: item.email || '', phone: item.phone || '' });
+    if (type === 'supplier')
+      setFormData({
+        name: item.name || '',
+        email: item.email || '',
+        phone: item.phone || '',
+        address: item.address || '',
+      });
     if (type === 'category') setFormData({ name: item.name || '' });
     if (type === 'employee') {
       setFormData({
@@ -129,8 +124,9 @@ export default function ClientsFournisseurs() {
       if (!formData.firstName?.trim()) errors.firstName = 'Le prénom est requis';
       if (!formData.lastName?.trim()) errors.lastName = 'Le nom est requis';
       if (modalMode === 'create') {
-        if (!formData.email?.trim()) errors.email = 'L\'email est requis';
-        if (!formData.password || formData.password.length < 8) errors.password = '8 caractères minimum requis';
+        if (!formData.email?.trim()) errors.email = "L'email est requis";
+        if (!formData.password || formData.password.length < 8)
+          errors.password = '8 caractères minimum requis';
       }
     }
 
@@ -178,7 +174,7 @@ export default function ClientsFournisseurs() {
       setModalType(null);
       loadData();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Erreur lors de l\'enregistrement');
+      toast.error(err.response?.data?.message || "Erreur lors de l'enregistrement");
     } finally {
       setSaving(false);
     }
@@ -233,7 +229,7 @@ export default function ClientsFournisseurs() {
     },
     {
       key: 'created_at',
-      header: 'DATE D\'AJOUT',
+      header: "DATE D'AJOUT",
       render: (c) => formatDate(c.created_at),
     },
     {
@@ -374,9 +370,7 @@ export default function ClientsFournisseurs() {
       key: 'role',
       header: 'RÔLE',
       render: (u) => (
-        <span
-          className={`badge ${u.role === 'admin' ? 'badge-primary' : 'badge-neutral'}`}
-        >
+        <span className={`badge ${u.role === 'admin' ? 'badge-primary' : 'badge-neutral'}`}>
           {u.role === 'admin' ? 'Administrateur' : 'Personnel'}
         </span>
       ),
@@ -385,9 +379,7 @@ export default function ClientsFournisseurs() {
       key: 'is_active',
       header: 'STATUT',
       render: (u) => (
-        <span
-          className={`badge ${u.is_active ? 'badge-success' : 'badge-danger'}`}
-        >
+        <span className={`badge ${u.is_active ? 'badge-success' : 'badge-danger'}`}>
           {u.is_active ? 'Actif' : 'Inactif'}
         </span>
       ),
@@ -426,7 +418,14 @@ export default function ClientsFournisseurs() {
       {/* ── En-tête de page ───────────────────────────────────────────── */}
       <div className="page-header flex-between">
         <div>
-          <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-text)', letterSpacing: '-0.02em' }}>
+          <h2
+            style={{
+              fontSize: '24px',
+              fontWeight: 700,
+              color: 'var(--color-text)',
+              letterSpacing: '-0.02em',
+            }}
+          >
             Partenaires & Structure
           </h2>
           <p className="text-muted" style={{ fontSize: '14px', marginTop: '4px' }}>
@@ -537,17 +536,17 @@ export default function ClientsFournisseurs() {
               ? modalType === 'client'
                 ? 'Nouveau client'
                 : modalType === 'supplier'
-                ? 'Nouveau fournisseur'
-                : modalType === 'category'
-                ? 'Nouvelle catégorie'
-                : 'Nouveau collaborateur'
+                  ? 'Nouveau fournisseur'
+                  : modalType === 'category'
+                    ? 'Nouvelle catégorie'
+                    : 'Nouveau collaborateur'
               : modalType === 'client'
-              ? 'Modifier le client'
-              : modalType === 'supplier'
-              ? 'Modifier le fournisseur'
-              : modalType === 'category'
-              ? 'Modifier la catégorie'
-              : 'Modifier le collaborateur'
+                ? 'Modifier le client'
+                : modalType === 'supplier'
+                  ? 'Modifier le fournisseur'
+                  : modalType === 'category'
+                    ? 'Modifier la catégorie'
+                    : 'Modifier le collaborateur'
           }
           onClose={() => setModalType(null)}
           footer={
@@ -560,12 +559,7 @@ export default function ClientsFournisseurs() {
               >
                 Annuler
               </button>
-              <button
-                type="submit"
-                form="crud-form"
-                className="btn btn-primary"
-                disabled={saving}
-              >
+              <button type="submit" form="crud-form" className="btn btn-primary" disabled={saving}>
                 {saving ? 'Enregistrement…' : 'Enregistrer'}
               </button>
             </>
@@ -728,10 +722,10 @@ export default function ClientsFournisseurs() {
           deleteTarget?.type === 'client'
             ? 'Supprimer le client'
             : deleteTarget?.type === 'supplier'
-            ? 'Supprimer le fournisseur'
-            : deleteTarget?.type === 'category'
-            ? 'Supprimer la catégorie'
-            : 'Supprimer le collaborateur'
+              ? 'Supprimer le fournisseur'
+              : deleteTarget?.type === 'category'
+                ? 'Supprimer la catégorie'
+                : 'Supprimer le collaborateur'
         }
         message={`Êtes-vous sûr de vouloir supprimer "${
           deleteTarget?.item?.name ||
@@ -744,4 +738,3 @@ export default function ClientsFournisseurs() {
     </div>
   );
 }
-

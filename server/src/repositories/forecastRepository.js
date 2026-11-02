@@ -123,3 +123,4 @@ const forecastRepository = {
 };
 
 module.exports = forecastRepository;
+

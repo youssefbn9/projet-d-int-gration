@@ -20,9 +20,7 @@ const MAIN_NAV_ITEMS = [
   { to: '/previsions', icon: TrendingUp, label: 'Prévisions' },
 ];
 
-const ADMIN_NAV_ITEMS = [
-  { to: '/users', icon: UserCheck, label: 'Équipe & Utilisateurs' },
-];
+const ADMIN_NAV_ITEMS = [{ to: '/users', icon: UserCheck, label: 'Équipe & Utilisateurs' }];
 
 export default function Sidebar({ open, onClose }) {
   const { user, logout } = useAuth();
@@ -87,7 +85,9 @@ export default function Sidebar({ open, onClose }) {
 
           {user?.role === 'admin' && (
             <>
-              <p className="nav-section-title" style={{ marginTop: '16px' }}>Administration</p>
+              <p className="nav-section-title" style={{ marginTop: '16px' }}>
+                Administration
+              </p>
               {ADMIN_NAV_ITEMS.map((item) => {
                 const IconComponent = item.icon;
                 return (
@@ -113,7 +113,9 @@ export default function Sidebar({ open, onClose }) {
             <div className="sidebar-user-avatar">{initials}</div>
             <div className="sidebar-user-info">
               <div className="sidebar-user-name">
-                {user?.name || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.email}
+                {user?.name ||
+                  `${user?.firstName || ''} ${user?.lastName || ''}`.trim() ||
+                  user?.email}
               </div>
               <div className="sidebar-user-role">
                 {user?.role === 'admin' ? 'Administrateur' : 'Personnel'}

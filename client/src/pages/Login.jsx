@@ -27,9 +27,9 @@ export default function Login() {
   const [touched, setTouched] = useState({});
 
   const validateEmail = (email) => {
-    if (!email) return 'L\'adresse email est requise';
+    if (!email) return "L'adresse email est requise";
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) return 'Format d\'adresse email invalide';
+    if (!emailRegex.test(email)) return "Format d'adresse email invalide";
     return '';
   };
 
@@ -52,12 +52,9 @@ export default function Login() {
     return {
       companyName:
         touched.regCompany && !registerForm.companyName.trim()
-          ? 'Le nom de l\'entreprise est requis'
+          ? "Le nom de l'entreprise est requis"
           : '',
-      name:
-        touched.regName && !registerForm.name.trim()
-          ? 'Votre nom est requis'
-          : '',
+      name: touched.regName && !registerForm.name.trim() ? 'Votre nom est requis' : '',
       email: touched.regEmail ? validateEmail(registerForm.email) : '',
       password: touched.regPassword ? validatePassword(registerForm.password) : '',
     };
@@ -111,7 +108,7 @@ export default function Login() {
       toast.success('Compte entreprise créé avec succès !');
       navigate('/dashboard', { replace: true });
     } catch (err) {
-      setServerError(err.response?.data?.message || 'Erreur lors de l\'inscription');
+      setServerError(err.response?.data?.message || "Erreur lors de l'inscription");
     } finally {
       setLoading(false);
     }
@@ -136,11 +133,10 @@ export default function Login() {
             <span>StockPro SaaS</span>
           </div>
 
-          <h1 className="login-left-title">
-            Gérez vos stocks & ventes avec sérénité
-          </h1>
+          <h1 className="login-left-title">Gérez vos stocks & ventes avec sérénité</h1>
           <p className="login-left-sub">
-            La solution cloud multi-commerces conçue pour les commerçants modernes, performante, claire et intuitive.
+            La solution cloud multi-commerces conçue pour les commerçants modernes, performante,
+            claire et intuitive.
           </p>
 
           <div className="login-feature-list">
@@ -176,13 +172,20 @@ export default function Login() {
       <div className="login-right-panel">
         <div className="login-card-inner">
           <div style={{ marginBottom: '24px' }}>
-            <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-text)', marginBottom: '6px' }}>
+            <h2
+              style={{
+                fontSize: '24px',
+                fontWeight: 700,
+                color: 'var(--color-text)',
+                marginBottom: '6px',
+              }}
+            >
               {tab === 'login' ? 'Bienvenue sur StockPro' : 'Créer votre commerce'}
             </h2>
             <p className="text-muted" style={{ fontSize: '14px' }}>
               {tab === 'login'
                 ? 'Connectez-vous pour accéder à votre tableau de bord'
-                : 'Commencez à gérer votre boutique dès aujourd\'hui'}
+                : "Commencez à gérer votre boutique dès aujourd'hui"}
             </p>
           </div>
 
@@ -340,7 +343,7 @@ export default function Login() {
                 style={{ marginTop: '8px', padding: '12px' }}
                 disabled={loading}
               >
-                {loading ? 'Création de l\'espace…' : 'Créer mon commerce'}
+                {loading ? "Création de l'espace…" : 'Créer mon commerce'}
               </button>
             </form>
           )}

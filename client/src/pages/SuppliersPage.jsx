@@ -160,19 +160,10 @@ export default function SuppliersPage() {
           onClose={() => setModal(null)}
           footer={
             <>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => setModal(null)}
-              >
+              <button type="button" className="btn btn-secondary" onClick={() => setModal(null)}>
                 Annuler
               </button>
-              <button
-                className="btn btn-primary"
-                form="sup-form"
-                type="submit"
-                disabled={saving}
-              >
+              <button className="btn btn-primary" form="sup-form" type="submit" disabled={saving}>
                 {saving ? 'Sauvegarde…' : 'Enregistrer'}
               </button>
             </>

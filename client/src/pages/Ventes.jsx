@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, ShoppingCart, Trash2, Calendar, User, Eye, X } from 'lucide-react';
+import { Plus, ShoppingCart, Trash2, User, Eye } from 'lucide-react';
 import { salesService, productService, customerService } from '../services';
 import DataTable from '../components/DataTable';
 import Pagination from '../components/Pagination';
@@ -31,23 +31,26 @@ export default function Ventes() {
   const [formError, setFormError] = useState('');
 
   // ── Chargement des ventes ──────────────────────────────────────────────────
-  const fetchSales = useCallback(async (page = 1) => {
-    setLoading(true);
-    setFetchError('');
-    try {
-      const params = { page, limit: 15 };
-      if (statusFilter) params.status = statusFilter;
+  const fetchSales = useCallback(
+    async (page = 1) => {
+      setLoading(true);
+      setFetchError('');
+      try {
+        const params = { page, limit: 15 };
+        if (statusFilter) params.status = statusFilter;
 
-      const res = await salesService.getAll(params);
-      const data = res.data.data;
-      setSales(data.items || []);
-      setPagination(data.pagination || { page, limit: 15, total: 0, totalPages: 1 });
-    } catch (err) {
-      setFetchError(err.response?.data?.message || 'Erreur lors du chargement des ventes');
-    } finally {
-      setLoading(false);
-    }
-  }, [statusFilter]);
+        const res = await salesService.getAll(params);
+        const data = res.data.data;
+        setSales(data.items || []);
+        setPagination(data.pagination || { page, limit: 15, total: 0, totalPages: 1 });
+      } catch (err) {
+        setFetchError(err.response?.data?.message || 'Erreur lors du chargement des ventes');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [statusFilter]
+  );
 
   useEffect(() => {
     fetchSales(1);
@@ -61,7 +64,8 @@ export default function Ventes() {
         productService.getAll({ limit: 200 }),
       ]);
       setCustomers(custRes.data.data?.items || custRes.data.data || []);
-      const prods = prodRes.data.data?.items || prodRes.data.data?.products || prodRes.data.data || [];
+      const prods =
+        prodRes.data.data?.items || prodRes.data.data?.products || prodRes.data.data || [];
       setAvailableProducts(prods);
     } catch {
       addToast('Impossible de charger les données pour la vente', 'error');
@@ -136,7 +140,9 @@ export default function Ventes() {
       const prod = productMap.get(parseInt(it.productId, 10));
       const qty = parseInt(it.quantity, 10);
       if (prod && qty > prod.stock_quantity) {
-        setFormError(`Quantité demandée (${qty}) supérieure au stock disponible (${prod.stock_quantity}) pour "${prod.name}".`);
+        setFormError(
+          `Quantité demandée (${qty}) supérieure au stock disponible (${prod.stock_quantity}) pour "${prod.name}".`
+        );
         return;
       }
     }
@@ -196,9 +202,7 @@ export default function Ventes() {
       key: 'id',
       header: 'N° Vente',
       render: (s) => (
-        <span style={{ fontWeight: 700, color: 'var(--color-primary)' }}>
-          #{s.id}
-        </span>
+        <span style={{ fontWeight: 700, color: 'var(--color-primary)' }}>#{s.id}</span>
       ),
     },
     {
@@ -324,11 +328,7 @@ export default function Ventes() {
         ) : (
           <>
             <div style={{ cursor: 'pointer' }}>
-              <DataTable
-                columns={columns}
-                data={sales}
-                keyExtractor={(s) => s.id}
-              />
+              <DataTable columns={columns} data={sales} keyExtractor={(s) => s.id} />
             </div>
 
             <div style={{ padding: '1rem', borderTop: '1px solid var(--color-border)' }}>
@@ -350,7 +350,9 @@ export default function Ventes() {
           title="Enregistrer une nouvelle vente"
           onClose={() => !saving && setModalOpen(false)}
           footer={
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', width: '100%' }}>
+            <div
+              style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', width: '100%' }}
+            >
               <button
                 type="button"
                 className="btn btn-secondary"
@@ -399,7 +401,13 @@ export default function Ventes() {
               />
             </div>
 
-            <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: '0.5rem 0' }} />
+            <hr
+              style={{
+                border: 'none',
+                borderTop: '1px solid var(--color-border)',
+                margin: '0.5rem 0',
+              }}
+            />
 
             {/* Articles de la vente */}
             <div>
@@ -418,7 +426,8 @@ export default function Ventes() {
                   const isStockInsufficient =
                     selectedProd && parseInt(item.quantity, 10) > selectedProd.stock_quantity;
                   const lineSubtotal = selectedProd
-                    ? (parseFloat(selectedProd.unit_price) || 0) * (parseInt(item.quantity, 10) || 0)
+                    ? (parseFloat(selectedProd.unit_price) || 0) *
+                      (parseInt(item.quantity, 10) || 0)
                     : 0;
 
                   return (
@@ -431,7 +440,14 @@ export default function Ventes() {
                         borderColor: isStockInsufficient ? '#feb2b2' : 'var(--color-border)',
                       }}
                     >
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 110px 110px 40px', gap: '10px', alignItems: 'center' }}>
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: '1fr 110px 110px 40px',
+                          gap: '10px',
+                          alignItems: 'center',
+                        }}
+                      >
                         {/* Sélecteur de produit */}
                         <div>
                           <select
@@ -443,14 +459,24 @@ export default function Ventes() {
                             <option value="">Sélectionner un produit...</option>
                             {availableProducts.map((p) => (
                               <option key={p.id} value={p.id} disabled={p.stock_quantity <= 0}>
-                                {p.name} ({p.sku}) — {formatCurrency(p.unit_price)} [Stock: {p.stock_quantity}]
+                                {p.name} ({p.sku}) — {formatCurrency(p.unit_price)} [Stock:{' '}
+                                {p.stock_quantity}]
                               </option>
                             ))}
                           </select>
                           {selectedProd && (
-                            <div style={{ fontSize: '11px', marginTop: '3px', color: isStockInsufficient ? 'var(--color-danger)' : 'var(--color-text-muted)' }}>
+                            <div
+                              style={{
+                                fontSize: '11px',
+                                marginTop: '3px',
+                                color: isStockInsufficient
+                                  ? 'var(--color-danger)'
+                                  : 'var(--color-text-muted)',
+                              }}
+                            >
                               Stock dispo : <strong>{selectedProd.stock_quantity}</strong>
-                              {isStockInsufficient && ' ⚠️ Quantité demandée supérieure au stock disponible !'}
+                              {isStockInsufficient &&
+                                ' ⚠️ Quantité demandée supérieure au stock disponible !'}
                             </div>
                           )}
                         </div>
@@ -463,7 +489,13 @@ export default function Ventes() {
                             max={selectedProd ? selectedProd.stock_quantity : undefined}
                             className={`form-input ${isStockInsufficient ? 'input-error' : ''}`}
                             value={item.quantity}
-                            onChange={(e) => updateItem(idx, 'quantity', Math.max(1, parseInt(e.target.value, 10) || 1))}
+                            onChange={(e) =>
+                              updateItem(
+                                idx,
+                                'quantity',
+                                Math.max(1, parseInt(e.target.value, 10) || 1)
+                              )
+                            }
                             disabled={!item.productId}
                             required
                           />

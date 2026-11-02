@@ -104,3 +104,4 @@ describe('Module de Régression Linéaire (server/src/ml/linearRegression.js)', 
     expect(pred).toBe(0); // Jamais négatif
   });
 });
+

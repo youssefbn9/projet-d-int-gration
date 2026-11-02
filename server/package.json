@@ -18,6 +18,8 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "express-rate-limit": "^8.7.3",
+    "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "mysql2": "^3.10.1",
@@ -34,7 +36,23 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "testMatch": ["**/__tests__/**/*.test.js", "**/tests/**/*.test.js"],
-    "setupFiles": ["./src/config/testEnv.js"]
+    "testMatch": [
+      "**/__tests__/**/*.test.js",
+      "**/tests/**/*.test.js"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/tests/setup/"
+    ],
+    "setupFiles": [
+      "./src/config/testEnv.js"
+    ],
+    "globalSetup": "./tests/setup/globalSetup.js",
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/server.js",
+      "!src/config/swagger.js",
+      "!src/config/testEnv.js"
+    ]
   }
 }

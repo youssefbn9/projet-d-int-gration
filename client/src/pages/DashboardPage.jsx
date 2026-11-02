@@ -1,7 +1,14 @@
 import { useEffect, useState } from 'react';
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  BarChart, Bar,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
 } from 'recharts';
 import { productService, saleService } from '../services';
 import { useAuth } from '../context/AuthContext';
@@ -29,7 +36,9 @@ export default function DashboardPage() {
         setStockStats(statsRes.data.data);
         setDashData(dashRes.data.data);
         const prods = prodRes.data.data?.products || prodRes.data.data || [];
-        setLowStockProducts(prods.filter((p) => p.stock_quantity <= (p.stock_min || 5)).slice(0, 5));
+        setLowStockProducts(
+          prods.filter((p) => p.stock_quantity <= (p.stock_min || 5)).slice(0, 5)
+        );
       })
       .catch(() => setError('Impossible de charger les données du tableau de bord'))
       .finally(() => setLoading(false));
@@ -46,7 +55,14 @@ export default function DashboardPage() {
     <div className="flex-col gap-6">
       {/* ── Message d'accueil ─────────────────────────────────────────── */}
       <div style={{ marginBottom: '8px' }}>
-        <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-text)', letterSpacing: '-0.02em' }}>
+        <h2
+          style={{
+            fontSize: '24px',
+            fontWeight: 700,
+            color: 'var(--color-text)',
+            letterSpacing: '-0.02em',
+          }}
+        >
           Bonjour, {firstName}
         </h2>
         <p className="text-muted" style={{ fontSize: '14px', marginTop: '4px' }}>
@@ -102,7 +118,13 @@ export default function DashboardPage() {
       </div>
 
       {/* ── Graphiques ─────────────────────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gap: '24px',
+        }}
+      >
         {/* Évolution CA 30 jours */}
         <div className="card">
           <div className="card-header">
@@ -111,11 +133,14 @@ export default function DashboardPage() {
           </div>
           <div style={{ width: '100%', height: 260 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={dashData?.revenue || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart
+                data={dashData?.revenue || []}
+                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+              >
                 <defs>
                   <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#F97316" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="#F97316" stopOpacity={0.00} />
+                    <stop offset="95%" stopColor="#F97316" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#EFE5D2" vertical={false} />
@@ -146,7 +171,7 @@ export default function DashboardPage() {
                     fontSize: '12px',
                     color: '#3A2E28',
                   }}
-                  formatter={(v) => [formatCurrency(v), 'Chiffre d\'affaires']}
+                  formatter={(v) => [formatCurrency(v), "Chiffre d'affaires"]}
                 />
                 <Area
                   type="monotone"
@@ -174,7 +199,12 @@ export default function DashboardPage() {
                 margin={{ top: 10, right: 20, left: 20, bottom: 0 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#EFE5D2" horizontal={false} />
-                <XAxis type="number" tick={{ fill: '#7A6A5E', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <XAxis
+                  type="number"
+                  tick={{ fill: '#7A6A5E', fontSize: 11 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
                 <YAxis
                   type="category"
                   dataKey="name"
@@ -194,7 +224,13 @@ export default function DashboardPage() {
                   }}
                   formatter={(v) => [v, 'Unités vendues']}
                 />
-                <Bar dataKey="total_qty" name="Quantité vendue" fill="#F97316" radius={[0, 6, 6, 0]} barSize={18} />
+                <Bar
+                  dataKey="total_qty"
+                  name="Quantité vendue"
+                  fill="#F97316"
+                  radius={[0, 6, 6, 0]}
+                  barSize={18}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -202,7 +238,13 @@ export default function DashboardPage() {
       </div>
 
       {/* ── Listes "Stock bas" et "Alertes de rupture" ─────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gap: '24px',
+        }}
+      >
         <div className="card">
           <div className="card-header">
             <h3 className="card-title">Articles en alerte stock</h3>
@@ -226,7 +268,9 @@ export default function DashboardPage() {
                   }}
                 >
                   <div>
-                    <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--color-text)' }}>{p.name}</div>
+                    <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--color-text)' }}>
+                      {p.name}
+                    </div>
                     <div className="text-muted text-xs">SKU: {p.sku}</div>
                   </div>
                   <Badge type={p.stock_quantity === 0 ? 'danger' : 'warning'}>
@@ -244,23 +288,38 @@ export default function DashboardPage() {
             <Badge type="success">En ligne</Badge>
           </div>
           <div className="flex-col gap-3" style={{ fontSize: '13px' }}>
-            <div className="flex-between" style={{ padding: '8px 0', borderBottom: '1px solid var(--color-border)' }}>
+            <div
+              className="flex-between"
+              style={{ padding: '8px 0', borderBottom: '1px solid var(--color-border)' }}
+            >
               <span className="text-muted">Total des références au catalogue</span>
-              <span style={{ fontWeight: 700 }}>{formatNumber(stockStats?.total_products ?? 0)}</span>
+              <span style={{ fontWeight: 700 }}>
+                {formatNumber(stockStats?.total_products ?? 0)}
+              </span>
             </div>
-            <div className="flex-between" style={{ padding: '8px 0', borderBottom: '1px solid var(--color-border)' }}>
+            <div
+              className="flex-between"
+              style={{ padding: '8px 0', borderBottom: '1px solid var(--color-border)' }}
+            >
               <span className="text-muted">Valeur financière du stock</span>
               <span style={{ fontWeight: 700, color: 'var(--color-primary)' }}>
                 {formatCurrency(stockStats?.stock_value ?? 0)}
               </span>
             </div>
-            <div className="flex-between" style={{ padding: '8px 0', borderBottom: '1px solid var(--color-border)' }}>
+            <div
+              className="flex-between"
+              style={{ padding: '8px 0', borderBottom: '1px solid var(--color-border)' }}
+            >
               <span className="text-muted">Fournisseurs référencés</span>
-              <span style={{ fontWeight: 700 }}>{formatNumber(stockStats?.total_suppliers ?? 2)}</span>
+              <span style={{ fontWeight: 700 }}>
+                {formatNumber(stockStats?.total_suppliers ?? 2)}
+              </span>
             </div>
             <div className="flex-between" style={{ padding: '8px 0' }}>
               <span className="text-muted">Catégories actives</span>
-              <span style={{ fontWeight: 700 }}>{formatNumber(stockStats?.total_categories ?? 4)}</span>
+              <span style={{ fontWeight: 700 }}>
+                {formatNumber(stockStats?.total_categories ?? 4)}
+              </span>
             </div>
           </div>
         </div>

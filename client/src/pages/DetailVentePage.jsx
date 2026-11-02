@@ -3,14 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { saleService } from '../services';
 import { Spinner, Alert, Badge } from '../components/UI';
 import { formatCurrency, formatDateTime } from '../utils/format';
-import {
-  ArrowLeft,
-  Receipt,
-  User,
-  CreditCard,
-  Printer,
-  Package,
-} from 'lucide-react';
+import { ArrowLeft, Receipt, User, CreditCard, Printer, Package } from 'lucide-react';
 
 export default function DetailVentePage() {
   const { id } = useParams();
@@ -60,7 +53,12 @@ export default function DetailVentePage() {
     return (
       <div className="flex-col gap-6" style={{ maxWidth: 700, margin: '2rem auto' }}>
         <Alert type="danger">{error || 'Vente introuvable'}</Alert>
-        <button type="button" onClick={() => navigate('/ventes')} className="btn btn-secondary" style={{ alignSelf: 'flex-start' }}>
+        <button
+          type="button"
+          onClick={() => navigate('/ventes')}
+          className="btn btn-secondary"
+          style={{ alignSelf: 'flex-start' }}
+        >
           <ArrowLeft size={16} strokeWidth={1.75} />
           Retour aux ventes
         </button>
@@ -78,7 +76,14 @@ export default function DetailVentePage() {
           </Link>
           <div>
             <div className="flex-gap-2">
-              <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-text)', letterSpacing: '-0.02em' }}>
+              <h2
+                style={{
+                  fontSize: '24px',
+                  fontWeight: 700,
+                  color: 'var(--color-text)',
+                  letterSpacing: '-0.02em',
+                }}
+              >
                 Vente #{sale.id}
               </h2>
               {getSaleBadge(sale.status)}
@@ -90,11 +95,7 @@ export default function DetailVentePage() {
         </div>
 
         <div className="flex-gap-2">
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={() => window.print()}
-          >
+          <button type="button" className="btn btn-secondary" onClick={() => window.print()}>
             <Printer size={16} strokeWidth={1.75} />
             Imprimer le reçu
           </button>
@@ -221,10 +222,11 @@ export default function DetailVentePage() {
                   <td className="text-right" style={{ fontWeight: 600 }}>
                     {item.quantity}
                   </td>
-                  <td className="text-right">
-                    {formatCurrency(item.unit_price)}
-                  </td>
-                  <td className="text-right" style={{ fontWeight: 700, color: 'var(--color-text)' }}>
+                  <td className="text-right">{formatCurrency(item.unit_price)}</td>
+                  <td
+                    className="text-right"
+                    style={{ fontWeight: 700, color: 'var(--color-text)' }}
+                  >
                     {formatCurrency(item.subtotal)}
                   </td>
                 </tr>
@@ -232,7 +234,10 @@ export default function DetailVentePage() {
             </tbody>
             <tfoot>
               <tr style={{ background: 'var(--color-primary-light)' }}>
-                <td colSpan={3} style={{ fontWeight: 700, fontSize: '15px', color: 'var(--color-text)' }}>
+                <td
+                  colSpan={3}
+                  style={{ fontWeight: 700, fontSize: '15px', color: 'var(--color-text)' }}
+                >
                   Total Général Facturé (TTC)
                 </td>
                 <td

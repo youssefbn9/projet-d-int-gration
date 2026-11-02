@@ -37,12 +37,7 @@ export default function ConfirmDialog({
           <p>{message}</p>
         </div>
         <div className="modal-footer">
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={onCancel}
-            disabled={loading}
-          >
+          <button type="button" className="btn btn-secondary" onClick={onCancel} disabled={loading}>
             {cancelText}
           </button>
           <button

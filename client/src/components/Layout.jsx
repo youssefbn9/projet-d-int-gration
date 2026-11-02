@@ -34,10 +34,7 @@ export default function Layout() {
     <div className="app-layout">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="main-content">
-        <Topbar
-          title={title}
-          onMenuToggle={() => setSidebarOpen((open) => !open)}
-        />
+        <Topbar title={title} onMenuToggle={() => setSidebarOpen((open) => !open)} />
         <main className="page-content">
           <Outlet />
         </main>

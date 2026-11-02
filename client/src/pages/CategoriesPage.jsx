@@ -9,7 +9,12 @@ import { Plus, Pencil, Trash2, Package } from 'lucide-react';
 export default function CategoriesPage() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
-  const { data: categories, loading, error, refetch } = useFetch(() => categoryService.getAll(), []);
+  const {
+    data: categories,
+    loading,
+    error,
+    refetch,
+  } = useFetch(() => categoryService.getAll(), []);
   const [modal, setModal] = useState(null);
   const [selected, setSelected] = useState(null);
   const [name, setName] = useState('');
@@ -152,19 +157,10 @@ export default function CategoriesPage() {
           onClose={() => setModal(null)}
           footer={
             <>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => setModal(null)}
-              >
+              <button type="button" className="btn btn-secondary" onClick={() => setModal(null)}>
                 Annuler
               </button>
-              <button
-                className="btn btn-primary"
-                form="cat-form"
-                type="submit"
-                disabled={saving}
-              >
+              <button className="btn btn-primary" form="cat-form" type="submit" disabled={saving}>
                 {saving ? 'Enregistrement…' : 'Enregistrer'}
               </button>
             </>

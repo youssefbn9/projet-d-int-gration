@@ -73,3 +73,4 @@ function generateForecast(history = [], currentStock = 0) {
 module.exports = {
   generateForecast,
 };
+

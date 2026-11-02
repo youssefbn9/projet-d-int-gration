@@ -5,8 +5,20 @@ import { Spinner, EmptyState, Alert, Badge, Modal } from '../components/UI';
 import { formatDateTime } from '../utils/format';
 import { Plus, History } from 'lucide-react';
 
-const TYPE_LABELS = { in: 'Entrée', entry: 'Entrée', out: 'Sortie', exit: 'Sortie', adjustment: 'Ajustement' };
-const TYPE_BADGE = { in: 'success', entry: 'success', out: 'danger', exit: 'danger', adjustment: 'info' };
+const TYPE_LABELS = {
+  in: 'Entrée',
+  entry: 'Entrée',
+  out: 'Sortie',
+  exit: 'Sortie',
+  adjustment: 'Ajustement',
+};
+const TYPE_BADGE = {
+  in: 'success',
+  entry: 'success',
+  out: 'danger',
+  exit: 'danger',
+  adjustment: 'info',
+};
 
 export default function MovementsPage() {
   const { data: movements, loading, error, refetch } = useFetch(() => movementService.getAll(), []);
@@ -46,7 +58,14 @@ export default function MovementsPage() {
     <div className="flex-col gap-6">
       <div className="page-header flex-between">
         <div>
-          <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-text)', letterSpacing: '-0.02em' }}>
+          <h2
+            style={{
+              fontSize: '24px',
+              fontWeight: 700,
+              color: 'var(--color-text)',
+              letterSpacing: '-0.02em',
+            }}
+          >
             Mouvements de Stock
           </h2>
           <p className="text-muted" style={{ fontSize: '14px', marginTop: '4px' }}>
@@ -126,19 +145,10 @@ export default function MovementsPage() {
           onClose={() => setModal(false)}
           footer={
             <>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => setModal(false)}
-              >
+              <button type="button" className="btn btn-secondary" onClick={() => setModal(false)}>
                 Annuler
               </button>
-              <button
-                className="btn btn-primary"
-                form="mov-form"
-                type="submit"
-                disabled={saving}
-              >
+              <button className="btn btn-primary" form="mov-form" type="submit" disabled={saving}>
                 {saving ? 'Enregistrement…' : 'Valider le mouvement'}
               </button>
             </>

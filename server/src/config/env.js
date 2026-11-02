@@ -11,6 +11,7 @@ const env = {
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'stockpro',
+    ssl: process.env.DB_SSL === 'true' || process.env.DB_SSL === '1',
   },
   jwt: {
     secret: process.env.JWT_SECRET || 'CHANGE_ME_IN_PRODUCTION_SUPER_SECRET_KEY_256_BITS',

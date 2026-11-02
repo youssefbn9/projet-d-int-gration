@@ -87,7 +87,14 @@ export default function PrevisionsPage() {
       {/* ── En-tête de page ──────────────────────────────────────────────── */}
       <div className="page-header flex-between">
         <div>
-          <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-text)', letterSpacing: '-0.02em' }}>
+          <h2
+            style={{
+              fontSize: '24px',
+              fontWeight: 700,
+              color: 'var(--color-text)',
+              letterSpacing: '-0.02em',
+            }}
+          >
             Prévisions & Intelligence des Ventes
           </h2>
           <p className="text-muted" style={{ fontSize: '14px', marginTop: '4px' }}>
@@ -131,7 +138,10 @@ export default function PrevisionsPage() {
         <div className="stat-card">
           <div className="stat-card-header">
             <span className="stat-label">Ventes Prévues (30j)</span>
-            <div className="stat-icon-wrapper" style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)' }}>
+            <div
+              className="stat-icon-wrapper"
+              style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)' }}
+            >
               <TrendingUp size={20} strokeWidth={1.75} />
             </div>
           </div>
@@ -144,7 +154,13 @@ export default function PrevisionsPage() {
         <div className="stat-card">
           <div className="stat-card-header">
             <span className="stat-label">Indice de Confiance IA</span>
-            <div className="stat-icon-wrapper" style={{ background: 'var(--color-secondary-light)', color: 'var(--color-secondary)' }}>
+            <div
+              className="stat-icon-wrapper"
+              style={{
+                background: 'var(--color-secondary-light)',
+                color: 'var(--color-secondary)',
+              }}
+            >
               <Sparkles size={20} strokeWidth={1.75} />
             </div>
           </div>
@@ -157,27 +173,32 @@ export default function PrevisionsPage() {
         <div className="stat-card">
           <div className="stat-card-header">
             <span className="stat-label">Articles à Réapprovisionner</span>
-            <div className="stat-icon-wrapper" style={{ background: 'var(--color-warning-bg)', color: 'var(--color-warning)' }}>
+            <div
+              className="stat-icon-wrapper"
+              style={{ background: 'var(--color-warning-bg)', color: 'var(--color-warning)' }}
+            >
               <AlertTriangle size={20} strokeWidth={1.75} />
             </div>
           </div>
           <div className="stat-value">{formatNumber(3)}</div>
-          <div className="stat-meta text-danger">
-            Avant risque de rupture
-          </div>
+          <div className="stat-meta text-danger">Avant risque de rupture</div>
         </div>
 
         <div className="stat-card">
           <div className="stat-card-header">
             <span className="stat-label">Gain Prévisionnel Estimé</span>
-            <div className="stat-icon-wrapper" style={{ background: 'var(--color-accent-purple-bg)', color: 'var(--color-accent-purple)' }}>
+            <div
+              className="stat-icon-wrapper"
+              style={{
+                background: 'var(--color-accent-purple-bg)',
+                color: 'var(--color-accent-purple)',
+              }}
+            >
               <CheckCircle2 size={20} strokeWidth={1.75} />
             </div>
           </div>
           <div className="stat-value">{formatCurrency(1850)}</div>
-          <div className="stat-meta text-muted">
-            Économie sur ventes manquées
-          </div>
+          <div className="stat-meta text-muted">Économie sur ventes manquées</div>
         </div>
       </div>
 
@@ -196,7 +217,10 @@ export default function PrevisionsPage() {
         <div className="card-body">
           <div style={{ width: '100%', height: 320 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={PREVISION_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart
+                data={PREVISION_DATA}
+                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+              >
                 <defs>
                   <linearGradient id="colorHist" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#F97316" stopOpacity={0.25} />
@@ -240,7 +264,9 @@ export default function PrevisionsPage() {
                   height={36}
                   formatter={(value) => (
                     <span style={{ color: '#3A2E28', fontSize: '13px', fontWeight: 600 }}>
-                      {value === 'historique' ? 'Ventes réelles (Historique)' : 'Prévision IA (Estimée)'}
+                      {value === 'historique'
+                        ? 'Ventes réelles (Historique)'
+                        : 'Prévision IA (Estimée)'}
                     </span>
                   )}
                 />
@@ -301,7 +327,10 @@ export default function PrevisionsPage() {
                   <td className="text-right" style={{ fontWeight: 600 }}>
                     {r.stockActuel} unités
                   </td>
-                  <td className="text-right" style={{ fontWeight: 600, color: 'var(--color-primary)' }}>
+                  <td
+                    className="text-right"
+                    style={{ fontWeight: 600, color: 'var(--color-primary)' }}
+                  >
                     {r.demandePrevue} unités
                   </td>
                   <td>{r.dateRecommandee}</td>

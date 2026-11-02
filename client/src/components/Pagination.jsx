@@ -14,9 +14,13 @@ export default function Pagination({
     <nav className="pagination" aria-label="Pagination">
       <div className="pagination-count">
         {totalCount ? (
-          <span>{start}-{end} sur {totalCount}</span>
+          <span>
+            {start}-{end} sur {totalCount}
+          </span>
         ) : (
-          <span>Page {currentPage} sur {totalPages}</span>
+          <span>
+            Page {currentPage} sur {totalPages}
+          </span>
         )}
       </div>
 

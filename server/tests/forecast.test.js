@@ -10,29 +10,50 @@ describe('PASSE 5/10: Module de Prévision ML et API REST', () => {
   let demoProductId;
 
   beforeAll(async () => {
-    // Connexion avec le compte seed
-    const resLogin = await request(app)
-      .post('/api/auth/login')
-      .send({ email: 'admin@demo.tn', password: 'Admin123' });
+    const timestamp = Date.now();
 
-    tokenDemo = resLogin.body.data.token;
+    // Inscription du commerce principal pour les tests de prévision
+    const resReg = await request(app)
+      .post('/api/auth/register')
+      .send({
+        companyName: `Commerce Forecast ${timestamp}`,
+        name: 'Admin Forecast',
+        email: `admin.forecast.${timestamp}@demo.tn`,
+        password: 'Password123!',
+      });
+    tokenDemo = resReg.body.data.token;
 
     // Inscription d'un 2ème commerce pour tester l'étanchéité multi-tenant
     const resOther = await request(app)
       .post('/api/auth/register')
       .send({
-        companyName: `Autre Commerce ${Date.now()}`,
+        companyName: `Autre Commerce ${timestamp}`,
         name: 'Gérant Autre',
-        email: `autre.${Date.now()}@test.com`,
+        email: `autre.${timestamp}@test.com`,
         password: 'Password123!',
       });
     otherToken = resOther.body.data.token;
 
-    // Récupérer un produit du commerce démo
+    // Création d'un produit avec stock faible pour déclencher une alerte
     const resProd = await request(app)
-      .get('/api/products')
-      .set('Authorization', `Bearer ${tokenDemo}`);
-    demoProductId = resProd.body.data.items[0].id;
+      .post('/api/products')
+      .set('Authorization', `Bearer ${tokenDemo}`)
+      .send({
+        name: `Produit Forecast ${timestamp}`,
+        sku: `SKU-FC-${timestamp}`,
+        price: 15.0,
+        stock: 4,
+        stockMin: 10,
+      });
+    demoProductId = resProd.body.data.id;
+
+    // Enregistrer une vente pour générer de l'historique
+    await request(app)
+      .post('/api/sales')
+      .set('Authorization', `Bearer ${tokenDemo}`)
+      .send({
+        items: [{ productId: demoProductId, quantity: 2 }],
+      });
   });
 
   afterAll(async () => {
@@ -109,3 +130,4 @@ describe('PASSE 5/10: Module de Prévision ML et API REST', () => {
     }
   });
 });
+

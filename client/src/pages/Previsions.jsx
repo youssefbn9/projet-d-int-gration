@@ -9,19 +9,9 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
-import {
-  TrendingUp,
-  Sparkles,
-  AlertTriangle,
-  Package,
-  Calendar,
-  CheckCircle2,
-  Clock,
-  Info,
-} from 'lucide-react';
+import { Sparkles, AlertTriangle, CheckCircle2, Info } from 'lucide-react';
 import { forecastService, productService } from '../services';
 import { Spinner, Alert, Badge } from '../components/UI';
-import { formatNumber } from '../utils/format';
 
 export default function Previsions() {
   const [alerts, setAlerts] = useState([]);
@@ -36,14 +26,12 @@ export default function Previsions() {
   // ── Chargement initial des alertes et de la liste des produits ─────────────
   useEffect(() => {
     let mounted = true;
-    Promise.all([
-      forecastService.getAlerts(),
-      productService.getAll({ limit: 100 }),
-    ])
+    Promise.all([forecastService.getAlerts(), productService.getAll({ limit: 100 })])
       .then(([alertsRes, prodsRes]) => {
         if (!mounted) return;
         const alts = alertsRes.data.data || [];
-        const prods = prodsRes.data.data?.items || prodsRes.data.data?.products || prodsRes.data.data || [];
+        const prods =
+          prodsRes.data.data?.items || prodsRes.data.data?.products || prodsRes.data.data || [];
         setAlerts(alts);
         setProducts(prods);
 
@@ -176,7 +164,8 @@ export default function Previsions() {
             </span>
           </div>
           <p className="text-muted" style={{ marginTop: '4px' }}>
-            Modèle prédictif linéaire analysant la vélocité et les tendances pour anticiper les réapprovisionnements.
+            Modèle prédictif linéaire analysant la vélocité et les tendances pour anticiper les
+            réapprovisionnements.
           </p>
         </div>
       </div>
@@ -193,17 +182,31 @@ export default function Previsions() {
         </div>
 
         {alerts.length === 0 ? (
-          <div style={{ padding: '1.5rem', textAlign: 'center', backgroundColor: 'var(--color-bg-alt)', borderRadius: '8px' }}>
+          <div
+            style={{
+              padding: '1.5rem',
+              textAlign: 'center',
+              backgroundColor: 'var(--color-bg-alt)',
+              borderRadius: '8px',
+            }}
+          >
             <CheckCircle2 size={32} style={{ color: '#38a169', margin: '0 auto 8px' }} />
             <p style={{ fontWeight: 600, color: 'var(--color-text)' }}>
               Excellent ! Aucun produit n'est menacé de rupture dans les 7 prochains jours.
             </p>
             <p className="text-muted" style={{ fontSize: '12px', marginTop: '4px' }}>
-              Le rythme de vos ventes et vos niveaux de stock actuels garantissent une continuité opérationnelle.
+              Le rythme de vos ventes et vos niveaux de stock actuels garantissent une continuité
+              opérationnelle.
             </p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+              gap: '1rem',
+            }}
+          >
             {alerts.map((al) => {
               const isSelected = String(al.product.id) === selectedProductId;
               return (
@@ -215,7 +218,9 @@ export default function Previsions() {
                     borderRadius: '8px',
                     cursor: 'pointer',
                     border: `2px solid ${isSelected ? 'var(--color-primary)' : 'var(--color-border)'}`,
-                    backgroundColor: isSelected ? 'var(--color-primary-light, #fff8f3)' : 'var(--color-bg-alt)',
+                    backgroundColor: isSelected
+                      ? 'var(--color-primary-light, #fff8f3)'
+                      : 'var(--color-bg-alt)',
                     transition: 'all 0.15s ease',
                   }}
                 >
@@ -231,9 +236,22 @@ export default function Previsions() {
                     {getSeverityBadge(al.daysBeforeStockout)}
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginTop: '10px', paddingTop: '8px', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
-                    <span>Stock : <strong>{al.product.stock}</strong></span>
-                    <span>Ventes : <strong>~{al.avgForecastPerDay}/j</strong></span>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      fontSize: '12px',
+                      marginTop: '10px',
+                      paddingTop: '8px',
+                      borderTop: '1px solid rgba(0,0,0,0.06)',
+                    }}
+                  >
+                    <span>
+                      Stock : <strong>{al.product.stock}</strong>
+                    </span>
+                    <span>
+                      Ventes : <strong>~{al.avgForecastPerDay}/j</strong>
+                    </span>
                   </div>
                 </div>
               );
@@ -244,7 +262,10 @@ export default function Previsions() {
 
       {/* ── Sélecteur de produit & Vue Prévisionnelle Détaillée ───────────────── */}
       <div className="card" style={{ padding: '1.5rem' }}>
-        <div className="flex-between" style={{ flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
+        <div
+          className="flex-between"
+          style={{ flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}
+        >
           <div>
             <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text)' }}>
               Courbe Prévisionnelle du Produit
@@ -292,26 +313,48 @@ export default function Previsions() {
           >
             <Info size={18} style={{ flexShrink: 0 }} />
             <span>
-              <strong>Données historiques restreintes :</strong> Très peu de ventes ont été enregistrées pour ce produit sur les 30 derniers jours. La prévision linéaire reflète une demande minimale.
+              <strong>Données historiques restreintes :</strong> Très peu de ventes ont été
+              enregistrées pour ce produit sur les 30 derniers jours. La prévision linéaire reflète
+              une demande minimale.
             </span>
           </div>
         )}
 
         {/* Cartes d'indicateurs du modèle */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+            gap: '1rem',
+            marginBottom: '1.5rem',
+          }}
+        >
           {/* Stock actuel */}
           <div className="card" style={{ padding: '12px', backgroundColor: 'var(--color-bg-alt)' }}>
-            <span className="text-muted" style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 600 }}>
+            <span
+              className="text-muted"
+              style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 600 }}
+            >
               Stock Actuel
             </span>
-            <div style={{ fontSize: '20px', fontWeight: 800, marginTop: '2px', color: 'var(--color-text)' }}>
+            <div
+              style={{
+                fontSize: '20px',
+                fontWeight: 800,
+                marginTop: '2px',
+                color: 'var(--color-text)',
+              }}
+            >
               {currentStock} unité(s)
             </div>
           </div>
 
           {/* Vélocité prévue */}
           <div className="card" style={{ padding: '12px', backgroundColor: 'var(--color-bg-alt)' }}>
-            <span className="text-muted" style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 600 }}>
+            <span
+              className="text-muted"
+              style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 600 }}
+            >
               Moyenne Prévue / Jour
             </span>
             <div style={{ fontSize: '20px', fontWeight: 800, marginTop: '2px', color: '#6d28d9' }}>
@@ -321,20 +364,40 @@ export default function Previsions() {
 
           {/* Délai avant rupture */}
           <div className="card" style={{ padding: '12px', backgroundColor: 'var(--color-bg-alt)' }}>
-            <span className="text-muted" style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 600 }}>
+            <span
+              className="text-muted"
+              style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 600 }}
+            >
               Délai Avant Rupture
             </span>
-            <div style={{ fontSize: '20px', fontWeight: 800, marginTop: '2px', color: daysLeft !== null && daysLeft < 7 ? '#e53e3e' : '#38a169' }}>
+            <div
+              style={{
+                fontSize: '20px',
+                fontWeight: 800,
+                marginTop: '2px',
+                color: daysLeft !== null && daysLeft < 7 ? '#e53e3e' : '#38a169',
+              }}
+            >
               {daysLeft !== null ? `~${daysLeft} jour(s)` : 'Stock assuré'}
             </div>
           </div>
 
           {/* Qualité du modèle R² */}
           <div className="card" style={{ padding: '12px', backgroundColor: 'var(--color-bg-alt)' }}>
-            <span className="text-muted" style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 600 }}>
+            <span
+              className="text-muted"
+              style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 600 }}
+            >
               Indice de Fiabilité R²
             </span>
-            <div style={{ fontSize: '20px', fontWeight: 800, marginTop: '2px', color: 'var(--color-text)' }}>
+            <div
+              style={{
+                fontSize: '20px',
+                fontWeight: 800,
+                marginTop: '2px',
+                color: 'var(--color-text)',
+              }}
+            >
               {(model.r2 * 100).toFixed(1)} %
             </div>
           </div>
@@ -349,7 +412,11 @@ export default function Previsions() {
           <div style={{ width: '100%', height: 320 }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 10, right: 30, left: -10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="var(--color-border)"
+                />
                 <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--color-text-muted)' }} />
                 <YAxis tick={{ fontSize: 11, fill: 'var(--color-text-muted)' }} />
                 <Tooltip
@@ -365,7 +432,9 @@ export default function Previsions() {
                   }}
                 />
                 <Legend
-                  formatter={(val) => (val === 'historique' ? 'Historique réel (30j)' : 'Prévision ML (7j)')}
+                  formatter={(val) =>
+                    val === 'historique' ? 'Historique réel (30j)' : 'Prévision ML (7j)'
+                  }
                   wrapperStyle={{ paddingTop: '10px' }}
                 />
                 {/* Historique réel (trait plein orange) */}

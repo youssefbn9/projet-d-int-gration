@@ -56,3 +56,4 @@ router.get('/alerts', forecastController.getAlerts);
 router.get('/products/:id', forecastController.getProductForecast);
 
 module.exports = router;
+

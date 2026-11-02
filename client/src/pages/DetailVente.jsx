@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, XCircle, Printer, User, Calendar, CreditCard, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, XCircle, Printer, User, ShoppingBag } from 'lucide-react';
 import { salesService } from '../services';
 import DataTable from '../components/DataTable';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -26,7 +26,9 @@ export default function DetailVente() {
       const res = await salesService.getById(id);
       setSale(res.data.data);
     } catch (err) {
-      setError(err.response?.data?.message || 'Impossible de charger les informations de la vente.');
+      setError(
+        err.response?.data?.message || 'Impossible de charger les informations de la vente.'
+      );
     } finally {
       setLoading(false);
     }
@@ -111,11 +113,7 @@ export default function DetailVente() {
       key: 'quantity',
       header: 'Quantité',
       style: { textAlign: 'center', width: '120px' },
-      render: (item) => (
-        <span style={{ fontWeight: 700 }}>
-          {item.quantity}
-        </span>
-      ),
+      render: (item) => <span style={{ fontWeight: 700 }}>{item.quantity}</span>,
     },
     {
       key: 'unit_price',
@@ -148,11 +146,7 @@ export default function DetailVente() {
         </button>
 
         <div style={{ display: 'flex', gap: '8px' }}>
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm"
-            onClick={() => window.print()}
-          >
+          <button type="button" className="btn btn-secondary btn-sm" onClick={() => window.print()}>
             <Printer size={16} /> Imprimer le ticket
           </button>
 
@@ -184,7 +178,15 @@ export default function DetailVente() {
 
       {/* ── En-tête de la Vente ─────────────────────────────────────────────── */}
       <div className="card" style={{ padding: '1.5rem' }}>
-        <div className="flex-between" style={{ flexWrap: 'wrap', gap: '1rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '1rem' }}>
+        <div
+          className="flex-between"
+          style={{
+            flexWrap: 'wrap',
+            gap: '1rem',
+            borderBottom: '1px solid var(--color-border)',
+            paddingBottom: '1rem',
+          }}
+        >
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <h1 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--color-text)' }}>
@@ -198,7 +200,9 @@ export default function DetailVente() {
           </div>
 
           <div style={{ textAlign: 'right' }}>
-            <span style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>Montant Total Net</span>
+            <span style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>
+              Montant Total Net
+            </span>
             <div style={{ fontSize: '26px', fontWeight: 900, color: 'var(--color-primary)' }}>
               {formatCurrency(sale.total_amount)}
             </div>
@@ -206,9 +210,23 @@ export default function DetailVente() {
         </div>
 
         {/* Détails Métadonnées */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginTop: '1.5rem' }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: '1.5rem',
+            marginTop: '1.5rem',
+          }}
+        >
           <div>
-            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
+            <span
+              style={{
+                fontSize: '12px',
+                fontWeight: 600,
+                color: 'var(--color-text-muted)',
+                textTransform: 'uppercase',
+              }}
+            >
               Client
             </span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
@@ -230,7 +248,14 @@ export default function DetailVente() {
           </div>
 
           <div>
-            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
+            <span
+              style={{
+                fontSize: '12px',
+                fontWeight: 600,
+                color: 'var(--color-text-muted)',
+                textTransform: 'uppercase',
+              }}
+            >
               Vendeur / Caissier
             </span>
             <div style={{ marginTop: '4px', color: 'var(--color-text)', fontWeight: 600 }}>
@@ -239,7 +264,14 @@ export default function DetailVente() {
           </div>
 
           <div>
-            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
+            <span
+              style={{
+                fontSize: '12px',
+                fontWeight: 600,
+                color: 'var(--color-text-muted)',
+                textTransform: 'uppercase',
+              }}
+            >
               Note additionnelle
             </span>
             <div style={{ marginTop: '4px', color: 'var(--color-text)' }}>
@@ -251,20 +283,32 @@ export default function DetailVente() {
 
       {/* ── Tableau des Lignes d'articles ───────────────────────────────────── */}
       <div className="card" style={{ padding: 0 }}>
-        <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div
+          style={{
+            padding: '1rem 1.5rem',
+            borderBottom: '1px solid var(--color-border)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
           <ShoppingBag size={18} className="text-primary" />
           <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-text)' }}>
             Articles inclus dans la transaction ({sale.items?.length || 0})
           </h2>
         </div>
 
-        <DataTable
-          columns={columns}
-          data={sale.items || []}
-          keyExtractor={(item) => item.id}
-        />
+        <DataTable columns={columns} data={sale.items || []} keyExtractor={(item) => item.id} />
 
-        <div style={{ padding: '1.25rem 1.5rem', borderTop: '1px solid var(--color-border)', display: 'flex', justifyContent: 'flex-end', backgroundColor: 'var(--color-bg-alt)' }}>
+        <div
+          style={{
+            padding: '1.25rem 1.5rem',
+            borderTop: '1px solid var(--color-border)',
+            display: 'flex',
+            justifyContent: 'flex-end',
+            backgroundColor: 'var(--color-bg-alt)',
+          }}
+        >
           <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
             <span style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-text)' }}>
               Total de la vente :

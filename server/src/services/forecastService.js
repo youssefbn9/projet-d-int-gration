@@ -60,3 +60,4 @@ const forecastService = {
 };
 
 module.exports = forecastService;
+

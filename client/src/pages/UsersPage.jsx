@@ -180,19 +180,10 @@ export default function UsersPage() {
           onClose={() => setModal(null)}
           footer={
             <>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => setModal(null)}
-              >
+              <button type="button" className="btn btn-secondary" onClick={() => setModal(null)}>
                 Annuler
               </button>
-              <button
-                className="btn btn-primary"
-                form="user-form"
-                type="submit"
-                disabled={saving}
-              >
+              <button className="btn btn-primary" form="user-form" type="submit" disabled={saving}>
                 {saving ? 'Enregistrement…' : 'Enregistrer'}
               </button>
             </>
@@ -252,12 +243,7 @@ export default function UsersPage() {
 
             <div className="form-group">
               <label className="form-label">Rôle d'accès</label>
-              <select
-                name="role"
-                className="form-select"
-                value={form.role}
-                onChange={handleChange}
-              >
+              <select name="role" className="form-select" value={form.role} onChange={handleChange}>
                 <option value="staff">Personnel (ventes & stock)</option>
                 <option value="admin">Administrateur (accès complet)</option>
               </select>

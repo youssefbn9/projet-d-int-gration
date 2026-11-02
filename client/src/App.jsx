@@ -24,7 +24,13 @@ export default function App() {
             <Route path="/login" element={<Login />} />
 
             {/* Routes protégées sous le Layout */}
-            <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+            <Route
+              element={
+                <ProtectedRoute>
+                  <Layout />
+                </ProtectedRoute>
+              }
+            >
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<Dashboard />} />
 
