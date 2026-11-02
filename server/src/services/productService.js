@@ -120,6 +120,31 @@ const productService = {
   async getStockStats(companyId) {
     return productRepository.getStockStats(companyId);
   },
+
+  async getMovements(productId, companyId, query) {
+    const movements = await productRepository.getProductMovements(productId, companyId, query);
+    if (!movements) {
+      throw new AppError('Produit introuvable', 404, 'PRODUIT_INTROUVABLE');
+    }
+    return movements;
+  },
+
+  async adjustStock(companyId, userId, data) {
+    try {
+      return await productRepository.adjustStock({ companyId, userId, ...data });
+    } catch (err) {
+      if (err.code === 'PRODUIT_INTROUVABLE') {
+        throw new AppError(err.message, 404, 'PRODUIT_INTROUVABLE');
+      }
+      if (err.code === 'INSUFFICIENT_STOCK') {
+        throw new AppError(err.message, 409, 'INSUFFICIENT_STOCK');
+      }
+      if (err.code === 'BAD_REQUEST') {
+        throw new AppError(err.message, 400, 'BAD_REQUEST');
+      }
+      throw err;
+    }
+  },
 };
 
 module.exports = productService;

@@ -5,8 +5,8 @@ const saleService = require('../services/saleService');
 const saleController = {
   async getAll(req, res, next) {
     try {
-      const sales = await saleService.getAll(req.user.companyId, req.query);
-      res.json({ success: true, data: sales });
+      const data = await saleService.getAll(req.user.companyId, req.query);
+      res.json({ success: true, data });
     } catch (err) { next(err); }
   },
 
@@ -21,6 +21,18 @@ const saleController = {
     try {
       const sale = await saleService.create(req.user.companyId, req.user.userId, req.body);
       res.status(201).json({ success: true, data: sale });
+    } catch (err) { next(err); }
+  },
+
+  async updateStatus(req, res, next) {
+    try {
+      const sale = await saleService.updateStatus(
+        parseInt(req.params.id, 10),
+        req.user.companyId,
+        req.user.userId,
+        req.body.status
+      );
+      res.json({ success: true, data: sale });
     } catch (err) { next(err); }
   },
 

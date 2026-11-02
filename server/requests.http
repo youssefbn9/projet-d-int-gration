@@ -329,3 +329,4 @@ Authorization: Bearer {{tokenGamma}}
 ### 5.7 Suppression collaborateur
 DELETE {{baseUrl}}/users/{{newUserId}}
 Authorization: Bearer {{tokenAlpha}}
+

@@ -37,3 +37,4 @@ router.put('/:id', requireRole('admin'), validate(customerSchema), customerContr
 router.delete('/:id', requireRole('admin'), customerController.remove);
 
 module.exports = router;
+

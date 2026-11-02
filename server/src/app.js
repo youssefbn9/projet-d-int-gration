@@ -14,6 +14,8 @@ const userRoutes = require('./routes/user.routes');
 const productRoutes = require('./routes/product.routes');
 const saleRoutes = require('./routes/sale.routes');
 const customerRoutes = require('./routes/customer.routes');
+const stockRoutes = require('./routes/stock.routes');
+const dashboardRoutes = require('./routes/dashboard.routes');
 const { categoryRouter, supplierRouter, movementRouter } = require('./routes/misc.routes');
 
 const app = express();
@@ -34,6 +36,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/sales', saleRoutes);
+app.use('/api/stock', stockRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/categories', categoryRouter);
 app.use('/api/suppliers', supplierRouter);

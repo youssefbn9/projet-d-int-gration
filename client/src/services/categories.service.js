@@ -9,3 +9,4 @@ export const categoriesService = {
 };
 
 export default categoriesService;
+

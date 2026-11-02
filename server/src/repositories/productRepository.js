@@ -193,6 +193,136 @@ const productRepository = {
     }
   },
 
+  /** Historique paginé des mouvements d'un produit */
+  async getProductMovements(productId, companyId, { page = 1, limit = 20 } = {}) {
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.max(1, parseInt(limit, 10) || 20);
+    const offset = (pageNum - 1) * limitNum;
+
+    // Vérifier l'existence du produit dans le commerce
+    const prod = await this.findById(productId, companyId);
+    if (!prod) return null;
+
+    const [countRows] = await pool.query(
+      'SELECT COUNT(*) AS total FROM stock_movements WHERE product_id = ? AND company_id = ?',
+      [productId, companyId]
+    );
+    const total = countRows[0]?.total || 0;
+    const totalPages = Math.ceil(total / limitNum) || 1;
+
+    const [rows] = await pool.query(
+      `SELECT m.*, u.first_name, u.last_name, CONCAT(u.first_name, ' ', u.last_name) AS user_name
+       FROM stock_movements m
+       LEFT JOIN users u ON m.user_id = u.id
+       WHERE m.product_id = ? AND m.company_id = ?
+       ORDER BY m.created_at DESC
+       LIMIT ? OFFSET ?`,
+      [productId, companyId, limitNum, offset]
+    );
+
+    return {
+      items: rows,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        totalPages,
+      },
+    };
+  },
+
+  /** Ajustement de stock en transaction avec SELECT FOR UPDATE */
+  async adjustStock({ companyId, userId, productId, type, quantity, reason }) {
+    const conn = await pool.getConnection();
+    try {
+      await conn.beginTransaction();
+
+      const [prodRows] = await conn.query(
+        'SELECT id, name, stock_quantity FROM products WHERE id = ? AND company_id = ? LIMIT 1 FOR UPDATE',
+        [productId, companyId]
+      );
+      const product = prodRows[0];
+      if (!product) {
+        throw Object.assign(new Error('Produit introuvable pour votre commerce'), {
+          code: 'PRODUIT_INTROUVABLE',
+          status: 404,
+        });
+      }
+
+      const currentStock = parseInt(product.stock_quantity, 10);
+      const qty = parseInt(quantity, 10);
+      let newStock = currentStock;
+      let delta = 0;
+
+      if (type === 'in') {
+        if (qty <= 0) {
+          throw Object.assign(new Error('La quantité doit être supérieure à 0'), {
+            code: 'BAD_REQUEST',
+            status: 400,
+          });
+        }
+        newStock = currentStock + qty;
+        delta = qty;
+      } else if (type === 'out') {
+        if (qty <= 0) {
+          throw Object.assign(new Error('La quantité doit être supérieure à 0'), {
+            code: 'BAD_REQUEST',
+            status: 400,
+          });
+        }
+        newStock = currentStock - qty;
+        if (newStock < 0) {
+          throw Object.assign(
+            new Error(`Stock insuffisant pour effectuer cette sortie (${currentStock} disponible(s))`),
+            { code: 'INSUFFICIENT_STOCK', status: 409 }
+          );
+        }
+        delta = -qty;
+      } else if (type === 'adjustment') {
+        if (qty < 0) {
+          throw Object.assign(new Error('Le stock ajusté ne peut pas être négatif'), {
+            code: 'BAD_REQUEST',
+            status: 400,
+          });
+        }
+        newStock = qty;
+        delta = newStock - currentStock;
+      } else {
+        throw Object.assign(new Error('Type de mouvement invalide'), {
+          code: 'BAD_REQUEST',
+          status: 400,
+        });
+      }
+
+      await conn.query(
+        'UPDATE products SET stock_quantity = ? WHERE id = ? AND company_id = ?',
+        [newStock, productId, companyId]
+      );
+
+      const [mvResult] = await conn.query(
+        'INSERT INTO stock_movements (company_id, product_id, user_id, type, quantity, reason) VALUES (?, ?, ?, ?, ?, ?)',
+        [companyId, productId, userId, type, delta, reason || 'Ajustement de stock']
+      );
+
+      await conn.commit();
+      return {
+        movementId: mvResult.insertId,
+        productId,
+        productName: product.name,
+        previousStock: currentStock,
+        newStock,
+        type,
+        quantity: delta,
+        reason,
+      };
+    } catch (err) {
+      await conn.rollback();
+      throw err;
+    } finally {
+      conn.release();
+    }
+  },
+
   /** Statistiques de stock pour le dashboard */
   async getStockStats(companyId) {
     const [rows] = await pool.query(

@@ -10,3 +10,4 @@ export const productsService = {
 };
 
 export default productsService;
+

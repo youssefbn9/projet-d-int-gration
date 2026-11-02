@@ -48,6 +48,17 @@ const productController = {
       res.json({ success: true, data: stats });
     } catch (err) { next(err); }
   },
+
+  async getMovements(req, res, next) {
+    try {
+      const movements = await productService.getMovements(
+        parseInt(req.params.id, 10),
+        req.user.companyId,
+        req.query
+      );
+      res.json({ success: true, data: movements });
+    } catch (err) { next(err); }
+  },
 };
 
 module.exports = productController;

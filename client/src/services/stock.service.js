@@ -6,3 +6,4 @@ export const stockService = {
 };
 
 export default stockService;
+

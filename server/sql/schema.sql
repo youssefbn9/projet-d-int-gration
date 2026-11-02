@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS sales (
   user_id      INT UNSIGNED   NOT NULL,
   customer_id  INT UNSIGNED   NULL,
   total_amount DECIMAL(14,2)  NOT NULL DEFAULT 0.00,
-  status       ENUM('completed','cancelled') NOT NULL DEFAULT 'completed',
+  status       ENUM('pending','paid','cancelled','completed') NOT NULL DEFAULT 'pending',
   note         TEXT,
   created_at   DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_sale_company  FOREIGN KEY (company_id)  REFERENCES companies(id)  ON DELETE CASCADE,

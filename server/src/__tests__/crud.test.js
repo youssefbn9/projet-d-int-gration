@@ -10,10 +10,25 @@ describe('PASSE 3/10: CRUD Métier Backend & Sécurité Multi-Tenant', () => {
   let alphaUserId;
 
   beforeAll(async () => {
-    // Connexion Alpha
-    const resLogin = await request(app)
+    // Connexion Alpha (ou enregistrement si absent)
+    let resLogin = await request(app)
       .post('/api/auth/login')
       .send({ email: 'admin@alpha.com', password: 'Admin1234!' });
+
+    if (resLogin.status !== 200) {
+      await request(app)
+        .post('/api/auth/register')
+        .send({
+          companyName: 'Boutique Alpha',
+          name: 'Alice Durand',
+          email: 'admin@alpha.com',
+          password: 'Admin1234!',
+        });
+      resLogin = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'admin@alpha.com', password: 'Admin1234!' });
+    }
+
     tokenAlpha = resLogin.body.data.token;
     alphaUserId = resLogin.body.data.user.id;
 
@@ -80,12 +95,29 @@ describe('PASSE 3/10: CRUD Métier Backend & Sécurité Multi-Tenant', () => {
     });
 
     it('DELETE /api/categories/:id avec produits liés renvoie 409 CATEGORY_HAS_PRODUCTS', async () => {
-      // Catégorie 1 a des produits associés dans seed
+      // Créer un produit lié à catId
+      const pRes = await request(app)
+        .post('/api/products')
+        .set('Authorization', `Bearer ${tokenAlpha}`)
+        .send({
+          name: `Prod Linked ${Date.now()}`,
+          sku: `SKU-CAT-LNK-${Date.now()}`,
+          price: 15,
+          stock: 10,
+          categoryId: catId,
+        });
+      expect(pRes.status).toBe(201);
+
       const res = await request(app)
-        .delete('/api/categories/1')
+        .delete(`/api/categories/${catId}`)
         .set('Authorization', `Bearer ${tokenAlpha}`);
       expect(res.status).toBe(409);
       expect(res.body.error).toBe('CATEGORY_HAS_PRODUCTS');
+
+      // Nettoyer le produit
+      await request(app)
+        .delete(`/api/products/${pRes.body.data.id}`)
+        .set('Authorization', `Bearer ${tokenAlpha}`);
     });
   });
 
@@ -115,12 +147,29 @@ describe('PASSE 3/10: CRUD Métier Backend & Sécurité Multi-Tenant', () => {
     });
 
     it('DELETE /api/suppliers/:id lié à des produits renvoie 409 SUPPLIER_HAS_PRODUCTS', async () => {
-      // Fournisseur 1 a des produits dans seed
+      // Créer un produit lié à supId
+      const pRes = await request(app)
+        .post('/api/products')
+        .set('Authorization', `Bearer ${tokenAlpha}`)
+        .send({
+          name: `Prod Linked Sup ${Date.now()}`,
+          sku: `SKU-SUP-LNK-${Date.now()}`,
+          price: 25,
+          stock: 5,
+          supplierId: supId,
+        });
+      expect(pRes.status).toBe(201);
+
       const res = await request(app)
-        .delete('/api/suppliers/1')
+        .delete(`/api/suppliers/${supId}`)
         .set('Authorization', `Bearer ${tokenAlpha}`);
       expect(res.status).toBe(409);
       expect(res.body.error).toBe('SUPPLIER_HAS_PRODUCTS');
+
+      // Nettoyer le produit
+      await request(app)
+        .delete(`/api/products/${pRes.body.data.id}`)
+        .set('Authorization', `Bearer ${tokenAlpha}`);
     });
   });
 
@@ -237,9 +286,17 @@ describe('PASSE 3/10: CRUD Métier Backend & Sécurité Multi-Tenant', () => {
     });
 
     it('DELETE /api/products/:id lié à des ventes renvoie 409 PRODUCT_HAS_SALES', async () => {
-      // Produit 1 est lié à la vente seed
+      // Créer une vente liée à createdProdId
+      const saleRes = await request(app)
+        .post('/api/sales')
+        .set('Authorization', `Bearer ${tokenAlpha}`)
+        .send({
+          items: [{ productId: createdProdId, quantity: 1 }],
+        });
+      expect(saleRes.status).toBe(201);
+
       const res = await request(app)
-        .delete('/api/products/1')
+        .delete(`/api/products/${createdProdId}`)
         .set('Authorization', `Bearer ${tokenAlpha}`);
       expect(res.status).toBe(409);
       expect(res.body.error).toBe('PRODUCT_HAS_SALES');
@@ -305,3 +362,4 @@ describe('PASSE 3/10: CRUD Métier Backend & Sécurité Multi-Tenant', () => {
     });
   });
 });
+

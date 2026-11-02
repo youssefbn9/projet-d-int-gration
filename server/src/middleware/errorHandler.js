@@ -45,6 +45,7 @@ const errorHandler = (err, _req, res, _next) => {
       return res.status(409).json({
         success: false,
         error: 'SKU_ALREADY_EXISTS',
+        code: 'SKU_ALREADY_EXISTS',
         message: 'Ce SKU existe déjà pour votre commerce',
       });
     }
@@ -52,12 +53,14 @@ const errorHandler = (err, _req, res, _next) => {
       return res.status(409).json({
         success: false,
         error: 'CATEGORY_ALREADY_EXISTS',
+        code: 'CATEGORY_ALREADY_EXISTS',
         message: 'Une catégorie avec ce nom existe déjà',
       });
     }
     return res.status(409).json({
       success: false,
       error: 'EMAIL_ALREADY_USED',
+      code: 'EMAIL_ALREADY_USED',
       message: 'Cet email est déjà utilisé',
     });
   }
@@ -67,6 +70,7 @@ const errorHandler = (err, _req, res, _next) => {
     return res.status(err.statusCode).json({
       success: false,
       error: err.code,
+      code: err.code,
       message: err.message,
     });
   }

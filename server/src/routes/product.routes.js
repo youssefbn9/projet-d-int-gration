@@ -114,6 +114,29 @@ router.post('/', requireRole('admin'), validate(productSchema), productControlle
  *       409: { description: Produit lié à des ventes }
  */
 router.get('/:id', productController.getById);
+
+/**
+ * @swagger
+ * /products/{id}/movements:
+ *   get:
+ *     tags: [Produits]
+ *     summary: Historique paginé des mouvements d'un produit
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *       - in: query
+ *         name: page
+ *         schema: { type: integer, default: 1 }
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer, default: 20 }
+ *     responses:
+ *       200: { description: Liste des mouvements du produit }
+ *       404: { description: Produit introuvable }
+ */
+router.get('/:id/movements', productController.getMovements);
 router.put('/:id', requireRole('admin'), validate(productSchema), productController.update);
 router.delete('/:id', requireRole('admin'), productController.remove);
 

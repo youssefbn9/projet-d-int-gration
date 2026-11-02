@@ -44,6 +44,13 @@ async function migrate() {
       console.warn('Note stock_movements.type:', err.message);
     }
 
+    try {
+      await pool.query("ALTER TABLE sales MODIFY COLUMN status ENUM('pending','paid','cancelled','completed') NOT NULL DEFAULT 'pending'");
+      console.log('✅ Colonne sales.status mise à jour (pending, paid, cancelled, completed).');
+    } catch (err) {
+      console.warn('Note sales.status:', err.message);
+    }
+
     // Index unique category name per company
     try {
       await pool.query('ALTER TABLE categories ADD UNIQUE KEY uq_cat_name (company_id, name)');
@@ -63,3 +70,4 @@ async function migrate() {
 }
 
 migrate();
+
