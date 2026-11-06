@@ -94,3 +94,4 @@ Ce document valide l'ensemble des exigences techniques, de sécurité, métier e
 
 - [x] **Seed idempotent** : Script `server/src/db/seed.js` opérationnel générant des utilisateurs démo, des catégories, des clients, des fournisseurs, des produits et un historique de 60 jours de ventes.
 - [x] **Scénario de soutenance prêt** : Parcours utilisateur fluide (inscription, ajout de stock, vente au comptoir, décrémentation temps réel, annulation et prévision de rupture).
+

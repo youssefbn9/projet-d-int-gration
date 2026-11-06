@@ -267,11 +267,67 @@ export default function Login() {
                   fontSize: '13px',
                 }}
               >
-                <div style={{ fontWeight: 600, color: 'var(--color-text)', marginBottom: '4px' }}>
-                  Comptes de démonstration :
+                <div style={{ fontWeight: 600, color: 'var(--color-text)', marginBottom: '8px' }}>
+                  Comptes de démonstration (cliquez pour remplir) :
                 </div>
-                <div style={{ color: 'var(--color-text-secondary)' }}>
-                  Boutique Alpha : <code>admin@alpha.com</code> / <code>Admin1234!</code>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLoginForm({ email: 'admin@alpha.com', password: 'Admin1234!' });
+                      setServerError('');
+                    }}
+                    style={{
+                      background: 'none',
+                      border: '1px dashed var(--color-border)',
+                      padding: '6px 10px',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      color: 'var(--color-text-secondary)',
+                      fontSize: '12px',
+                    }}
+                  >
+                    👑 <strong>Admin (Alpha) :</strong> <code>admin@alpha.com</code> / <code>Admin1234!</code>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLoginForm({ email: 'admin@demo.tn', password: 'Admin123' });
+                      setServerError('');
+                    }}
+                    style={{
+                      background: 'none',
+                      border: '1px dashed var(--color-border)',
+                      padding: '6px 10px',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      color: 'var(--color-text-secondary)',
+                      fontSize: '12px',
+                    }}
+                  >
+                    👑 <strong>Admin (Demo) :</strong> <code>admin@demo.tn</code> / <code>Admin123</code>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLoginForm({ email: 'staff@demo.tn', password: 'Staff123' });
+                      setServerError('');
+                    }}
+                    style={{
+                      background: 'none',
+                      border: '1px dashed var(--color-border)',
+                      padding: '6px 10px',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      color: 'var(--color-text-secondary)',
+                      fontSize: '12px',
+                    }}
+                  >
+                    👤 <strong>Staff (Vendeur) :</strong> <code>staff@demo.tn</code> / <code>Staff123</code>
+                  </button>
                 </div>
               </div>
             </form>

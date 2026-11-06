@@ -39,6 +39,7 @@ async function seed() {
 
     // ── 3. Utilisateurs (Admin & Staff avec bcrypt 10 rounds) ────────────────
     const adminHash = await bcrypt.hash('Admin123', 10);
+    const alphaHash = await bcrypt.hash('Admin1234!', 10);
     const staffHash = await bcrypt.hash('Staff123', 10);
 
     const [adminRes] = await connection.query(
@@ -46,6 +47,11 @@ async function seed() {
       [companyId, 'admin@demo.tn', adminHash, 'Karim', 'Ben Ammar', 'admin']
     );
     const adminId = adminRes.insertId;
+
+    await connection.query(
+      'INSERT INTO users (company_id, email, password, first_name, last_name, role) VALUES (?, ?, ?, ?, ?, ?)',
+      [companyId, 'admin@alpha.com', alphaHash, 'Admin', 'Alpha', 'admin']
+    );
 
     const [staffRes] = await connection.query(
       'INSERT INTO users (company_id, email, password, first_name, last_name, role) VALUES (?, ?, ?, ?, ?, ?)',
