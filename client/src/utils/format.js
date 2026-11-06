@@ -1,53 +1,38 @@
-const currencyFormatter = new Intl.NumberFormat('fr-TN', {
-  style: 'currency',
-  currency: 'TND',
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 3,
-});
+export const formatCurrency = (n) =>
+  new Intl.NumberFormat('fr-TN', { style: 'currency', currency: 'TND' }).format(n ?? 0);
 
-const numberFormatter = new Intl.NumberFormat('fr-TN', {
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 2,
-});
+export const formatDate = (d) => {
+  if (!d) return '—';
+  try {
+    return new Intl.DateTimeFormat('fr-FR', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    }).format(new Date(d));
+  } catch {
+    return String(d);
+  }
+};
 
-const dateFormatter = new Intl.DateTimeFormat('fr-FR', {
-  year: 'numeric',
-  month: 'short',
-  day: 'numeric',
-});
-
-const dateTimeFormatter = new Intl.DateTimeFormat('fr-FR', {
-  year: 'numeric',
-  month: 'short',
-  day: 'numeric',
-  hour: '2-digit',
-  minute: '2-digit',
-});
-
-export const formatCurrency = (amount) => {
-  if (amount === undefined || amount === null || isNaN(Number(amount))) return '0,000 TND';
-  return currencyFormatter.format(Number(amount));
+export const formatDateTime = (d) => {
+  if (!d) return '—';
+  try {
+    return new Intl.DateTimeFormat('fr-FR', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(new Date(d));
+  } catch {
+    return String(d);
+  }
 };
 
 export const formatNumber = (value) => {
   if (value === undefined || value === null || isNaN(Number(value))) return '0';
-  return numberFormatter.format(Number(value));
-};
-
-export const formatDate = (dateString) => {
-  if (!dateString) return '—';
-  try {
-    return dateFormatter.format(new Date(dateString));
-  } catch (_e) {
-    return dateString;
-  }
-};
-
-export const formatDateTime = (dateString) => {
-  if (!dateString) return '—';
-  try {
-    return dateTimeFormatter.format(new Date(dateString));
-  } catch (_e) {
-    return dateString;
-  }
+  return new Intl.NumberFormat('fr-TN', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(Number(value));
 };

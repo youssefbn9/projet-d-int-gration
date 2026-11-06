@@ -6,9 +6,9 @@ import DataTable from '../components/DataTable';
 import Pagination from '../components/Pagination';
 import FormField from '../components/FormField';
 import ConfirmDialog from '../components/ConfirmDialog';
-import { Modal, Spinner } from '../components/UI';
+import { Modal, Spinner, Badge, Alert } from '../components/UI';
 import { formatCurrency, formatDateTime } from '../utils/format';
-import { Plus, Pencil, Trash2, Search, History, SlidersHorizontal, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, History, SlidersHorizontal } from 'lucide-react';
 
 const INITIAL_FORM = {
   name: '',
@@ -225,7 +225,7 @@ export default function Produits() {
     try {
       const res = await stockService.getMovements({ productId: prod.id });
       setProductMovements(res.data.data || []);
-    } catch (err) {
+    } catch {
       toast.error('Impossible de charger les mouvements du produit');
       setProductMovements([]);
     } finally {
@@ -273,7 +273,9 @@ export default function Produits() {
       header: 'NOM DU PRODUIT',
       render: (p) => (
         <div>
-          <div style={{ fontWeight: 600, color: 'var(--color-text)' }}>{p.name}</div>
+          <div className="font-semibold text-sm" style={{ color: 'var(--color-text)' }}>
+            {p.name}
+          </div>
           {p.description && (
             <div
               className="text-muted text-xs"
@@ -293,12 +295,19 @@ export default function Produits() {
     {
       key: 'sku',
       header: 'SKU',
-      render: (p) => <span className="text-muted text-xs font-semibold">{p.sku}</span>,
+      render: (p) => (
+        <span
+          className="text-muted text-xs font-semibold"
+          style={{ fontFamily: 'monospace' }}
+        >
+          {p.sku}
+        </span>
+      ),
     },
     {
       key: 'category_name',
       header: 'CATÉGORIE',
-      render: (p) => p.category_name || <span className="text-muted">—</span>,
+      render: (p) => p.category_name ? <Badge type="muted">{p.category_name}</Badge> : <span className="text-muted">—</span>,
     },
     {
       key: 'supplier_name',
@@ -310,30 +319,25 @@ export default function Produits() {
       header: 'PRIX',
       className: 'text-right',
       render: (p) => (
-        <span style={{ fontWeight: 600 }}>{formatCurrency(p.unit_price ?? p.price)}</span>
+        <span className="font-semibold tabular-nums">
+          {formatCurrency(p.unit_price ?? p.price)}
+        </span>
       ),
     },
     {
       key: 'stock_quantity',
-      header: 'STOCK',
+      header: 'DISPONIBILITÉ',
       className: 'text-right',
       render: (p) => {
         const qty = p.stock_quantity ?? p.stock ?? 0;
         const min = p.stock_min ?? p.min_stock ?? 0;
         const isLow = qty <= min;
+        const isOut = qty <= 0;
+
         return (
-          <span
-            style={{
-              fontWeight: 700,
-              padding: '3px 8px',
-              borderRadius: '6px',
-              backgroundColor: isLow ? '#FEE2E2' : '#DCFCE7',
-              color: isLow ? '#B91C1C' : '#15803D',
-              display: 'inline-block',
-            }}
-          >
-            {qty} {isLow && '⚠️'}
-          </span>
+          <Badge type={isOut ? 'danger' : isLow ? 'warning' : 'success'}>
+            {isOut ? 'Rupture (0)' : isLow ? `${qty} (Stock bas)` : `${qty} en stock`}
+          </Badge>
         );
       },
     },
@@ -341,7 +345,7 @@ export default function Produits() {
       key: 'stock_min',
       header: 'SEUIL',
       className: 'text-right',
-      render: (p) => p.stock_min ?? p.min_stock ?? 0,
+      render: (p) => <span className="tabular-nums text-muted">{p.stock_min ?? p.min_stock ?? 0}</span>,
     },
     {
       key: 'actions',
@@ -354,18 +358,18 @@ export default function Produits() {
             className="btn btn-icon btn-sm"
             onClick={() => handleOpenMovements(p)}
             title="Historique des mouvements"
-            aria-label="Mouvements"
+            aria-label={`Historique des mouvements de ${p.name}`}
           >
-            <History size={15} strokeWidth={1.75} />
+            <History size={16} strokeWidth={1.75} />
           </button>
           <button
             type="button"
             className="btn btn-icon btn-sm"
             onClick={() => handleOpenAdjust(p)}
             title="Ajuster le stock"
-            aria-label="Ajuster le stock"
+            aria-label={`Ajuster le stock de ${p.name}`}
           >
-            <SlidersHorizontal size={15} strokeWidth={1.75} />
+            <SlidersHorizontal size={16} strokeWidth={1.75} />
           </button>
           {isAdmin && (
             <>
@@ -374,19 +378,19 @@ export default function Produits() {
                 className="btn btn-icon btn-sm"
                 onClick={() => handleOpenEdit(p)}
                 title="Modifier"
-                aria-label="Modifier"
+                aria-label={`Modifier ${p.name}`}
               >
-                <Pencil size={15} strokeWidth={1.75} />
+                <Pencil size={16} strokeWidth={1.75} />
               </button>
               <button
                 type="button"
                 className="btn btn-icon btn-sm"
                 onClick={() => setDeleteProduct(p)}
                 title="Supprimer"
-                aria-label="Supprimer"
+                aria-label={`Supprimer ${p.name}`}
                 style={{ color: 'var(--color-danger)' }}
               >
-                <Trash2 size={15} strokeWidth={1.75} />
+                <Trash2 size={16} strokeWidth={1.75} />
               </button>
             </>
           )}
@@ -400,93 +404,89 @@ export default function Produits() {
       {/* ── En-tête de page ───────────────────────────────────────────── */}
       <div className="page-header flex-between">
         <div>
-          <h2
-            style={{
-              fontSize: '24px',
-              fontWeight: 700,
-              color: 'var(--color-text)',
-              letterSpacing: '-0.02em',
-            }}
-          >
-            Catalogue Produits
-          </h2>
-          <p className="text-muted" style={{ fontSize: '14px', marginTop: '4px' }}>
-            Gestion des stocks, prix, approvisionnements et mouvements
+          <h2 className="page-title">Catalogue Produits</h2>
+          <p className="page-subtitle">
+            Gestion des stocks, prix unitaire, alertes de réapprovisionnement et traçabilité
           </p>
         </div>
         {isAdmin && (
           <button type="button" className="btn btn-primary" onClick={handleOpenAdd}>
             <Plus size={16} strokeWidth={2} />
-            Nouveau produit
+            <span>Nouveau produit</span>
           </button>
         )}
       </div>
 
-      {/* ── Barre de filtres ─────────────────────────────────────────── */}
-      <div className="filter-bar">
-        <div className="search-input-wrap">
-          <span className="search-icon">
-            <Search size={16} strokeWidth={1.75} />
-          </span>
-          <input
-            className="form-input"
-            placeholder="Rechercher par nom ou SKU…"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+      {/* ── Barre d'outils : Search + Filtre Catégorie + Checkbox Stock Bas ── */}
+      <div className="card" style={{ padding: '14px 18px' }}>
+        <div className="filter-bar" style={{ marginBottom: 0 }}>
+          <div className="search-input-wrap">
+            <span className="search-icon">
+              <Search size={16} strokeWidth={1.75} />
+            </span>
+            <input
+              className="form-input"
+              placeholder="Rechercher par nom ou référence SKU…"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
 
-        <select
-          className="form-select"
-          style={{ width: 200 }}
-          value={selectedCategory}
-          onChange={(e) => {
-            setSelectedCategory(e.target.value);
-            setPage(1);
-          }}
-        >
-          <option value="">Toutes les catégories</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-
-        <label
-          className="flex-gap-2"
-          style={{ cursor: 'pointer', userSelect: 'none', fontSize: '14px', alignItems: 'center' }}
-        >
-          <input
-            type="checkbox"
-            checked={lowStockOnly}
+          <select
+            className="form-select"
+            style={{ width: 'auto', minWidth: '200px' }}
+            value={selectedCategory}
             onChange={(e) => {
-              setLowStockOnly(e.target.checked);
+              setSelectedCategory(e.target.value);
               setPage(1);
             }}
-          />
-          <span>Stock bas uniquement</span>
-        </label>
+          >
+            <option value="">Toutes les catégories</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+
+          <label
+            className="flex-gap-2"
+            style={{ cursor: 'pointer', userSelect: 'none', fontSize: '13px', fontWeight: 500 }}
+          >
+            <input
+              type="checkbox"
+              checked={lowStockOnly}
+              onChange={(e) => {
+                setLowStockOnly(e.target.checked);
+                setPage(1);
+              }}
+              style={{ accentColor: 'var(--color-primary)' }}
+            />
+            <span>Stock bas uniquement</span>
+          </label>
+        </div>
       </div>
 
       {/* ── Tableau de données paginé ─────────────────────────────────── */}
       {loading ? (
-        <Spinner />
+        <Spinner text="Chargement des produits…" />
       ) : (
-        <>
+        <div className="card" style={{ padding: 0 }}>
           <DataTable
             columns={columns}
             data={products}
             emptyText="Aucun produit trouvé dans le catalogue"
           />
-          <Pagination
-            currentPage={pagination.page}
-            totalPages={pagination.totalPages}
-            totalCount={pagination.total}
-            pageSize={pagination.limit}
-            onPageChange={(newPage) => setPage(newPage)}
-          />
-        </>
+          <div style={{ padding: '12px 16px', borderTop: '1px solid var(--color-border)' }}>
+            <Pagination
+              currentPage={pagination.page}
+              totalPages={pagination.totalPages}
+              totalCount={pagination.total}
+              pageSize={pagination.limit}
+              onPageChange={(newPage) => setPage(newPage)}
+            />
+          </div>
+        </div>
       )}
 
       {/* ── Modale Création / Modification de produit ──────────────────── */}
@@ -521,16 +521,9 @@ export default function Produits() {
             className="flex-col gap-4"
             noValidate
           >
-            {serverError && (
-              <div
-                className="alert alert-danger"
-                style={{ padding: '10px 12px', fontSize: '13px' }}
-              >
-                {serverError}
-              </div>
-            )}
+            {serverError && <Alert type="danger">{serverError}</Alert>}
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div className="grid-cols-2">
               <FormField
                 label="Désignation / Nom"
                 name="name"
@@ -550,7 +543,7 @@ export default function Produits() {
               />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div className="grid-cols-2">
               <FormField
                 label="Prix de vente unitaire (DT)"
                 name="price"
@@ -572,7 +565,7 @@ export default function Produits() {
               />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div className="grid-cols-2">
               <FormField
                 label="Quantité en stock"
                 name="stock"
@@ -593,7 +586,7 @@ export default function Produits() {
               />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div className="grid-cols-2">
               <div className="form-group">
                 <label className="form-label">Catégorie</label>
                 <select
@@ -650,75 +643,59 @@ export default function Produits() {
 
       {/* ── Modale Historique des Mouvements du Produit ─────────────────── */}
       {movementModalProduct && (
-        <div className="modal-overlay" onClick={() => setMovementModalProduct(null)}>
-          <div className="modal" style={{ maxWidth: 640 }} onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header flex-between">
-              <div>
-                <h3 className="modal-title">Historique des mouvements</h3>
-                <p className="text-muted text-xs" style={{ marginTop: '2px' }}>
-                  Produit : {movementModalProduct.name} ({movementModalProduct.sku})
-                </p>
-              </div>
-              <button
-                type="button"
-                className="btn btn-icon btn-sm"
-                onClick={() => setMovementModalProduct(null)}
-              >
-                <X size={18} strokeWidth={1.75} />
-              </button>
+        <Modal
+          title={`Mouvements : ${movementModalProduct.name} (${movementModalProduct.sku})`}
+          onClose={() => setMovementModalProduct(null)}
+        >
+          {loadingMovements ? (
+            <Spinner text="Chargement de l historique…" />
+          ) : productMovements.length === 0 ? (
+            <div className="empty-state" style={{ padding: '24px' }}>
+              <p className="empty-state-sub">Aucun mouvement enregistré pour ce produit.</p>
             </div>
-            <div className="modal-body">
-              {loadingMovements ? (
-                <Spinner />
-              ) : productMovements.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '24px' }} className="text-muted">
-                  Aucun mouvement enregistré pour ce produit.
-                </div>
-              ) : (
-                <div className="table-responsive">
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th>DATE</th>
-                        <th>TYPE</th>
-                        <th className="text-right">QUANTITÉ</th>
-                        <th>MOTIF</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {productMovements.map((m) => (
-                        <tr key={m.id}>
-                          <td className="text-xs">{formatDateTime(m.created_at)}</td>
-                          <td>
-                            <span
-                              className={`badge ${
-                                m.type === 'entry' || m.type === 'in'
-                                  ? 'badge-success'
-                                  : m.type === 'exit' || m.type === 'out'
-                                    ? 'badge-danger'
-                                    : 'badge-info'
-                              }`}
-                            >
-                              {m.type === 'entry' || m.type === 'in'
-                                ? 'Entrée'
-                                : m.type === 'exit' || m.type === 'out'
-                                  ? 'Sortie'
-                                  : 'Ajustement'}
-                            </span>
-                          </td>
-                          <td className="text-right font-semibold">
-                            {m.quantity > 0 ? `+${m.quantity}` : m.quantity}
-                          </td>
-                          <td className="text-sm">{m.reason || '—'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+          ) : (
+            <div className="table-responsive">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>DATE</th>
+                    <th>TYPE</th>
+                    <th className="text-right">QUANTITÉ</th>
+                    <th>MOTIF</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {productMovements.map((m) => (
+                    <tr key={m.id}>
+                      <td className="text-xs">{formatDateTime(m.created_at)}</td>
+                      <td>
+                        <Badge
+                          type={
+                            m.type === 'entry' || m.type === 'in'
+                              ? 'success'
+                              : m.type === 'exit' || m.type === 'out'
+                                ? 'danger'
+                                : 'info'
+                          }
+                        >
+                          {m.type === 'entry' || m.type === 'in'
+                            ? 'Entrée'
+                            : m.type === 'exit' || m.type === 'out'
+                              ? 'Sortie'
+                              : 'Ajustement'}
+                        </Badge>
+                      </td>
+                      <td className="text-right font-semibold tabular-nums">
+                        {m.quantity > 0 ? `+${m.quantity}` : m.quantity}
+                      </td>
+                      <td className="text-sm text-muted">{m.reason || '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </div>
-        </div>
+          )}
+        </Modal>
       )}
 
       {/* ── Modale Ajuster le Stock ────────────────────────────────────── */}
@@ -748,17 +725,10 @@ export default function Produits() {
           }
         >
           <form id="adjust-form" onSubmit={handleSaveAdjust} className="flex-col gap-4">
-            {adjustError && (
-              <div
-                className="alert alert-danger"
-                style={{ padding: '10px 12px', fontSize: '13px' }}
-              >
-                {adjustError}
-              </div>
-            )}
+            {adjustError && <Alert type="danger">{adjustError}</Alert>}
 
             <div className="form-group">
-              <label className="form-label">Type de mouvement</label>
+              <label className="form-label">Type d'opération</label>
               <select
                 className="form-select"
                 value={adjustForm.type}
@@ -781,7 +751,7 @@ export default function Produits() {
 
             <FormField
               label="Motif du mouvement"
-              placeholder="Ex: Réception livraison, Casse, Inventaire périodique…"
+              placeholder="Ex: Réception commande, inventaire, casse…"
               value={adjustForm.reason}
               onChange={(e) => setAdjustForm({ ...adjustForm, reason: e.target.value })}
               required

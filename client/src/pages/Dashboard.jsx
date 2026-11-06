@@ -16,7 +16,16 @@ import { dashboardService, forecastService } from '../services';
 import { useAuth } from '../context/AuthContext';
 import { Spinner, Alert, Badge } from '../components/UI';
 import { formatCurrency, formatNumber } from '../utils/format';
-import { Wallet, Receipt, AlertTriangle, ArrowRight, Sparkles, Clock } from 'lucide-react';
+import {
+  Wallet,
+  Receipt,
+  AlertTriangle,
+  ArrowRight,
+  Sparkles,
+  Clock,
+  CheckCircle2,
+  Package,
+} from 'lucide-react';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -52,19 +61,11 @@ export default function Dashboard() {
   }, []);
 
   if (loading) {
-    return (
-      <div style={{ padding: '3rem' }}>
-        <Spinner text="Chargement du tableau de bord..." />
-      </div>
-    );
+    return <Spinner text="Chargement du tableau de bord..." />;
   }
 
   if (error) {
-    return (
-      <div style={{ padding: '1.5rem' }}>
-        <Alert type="danger">{error}</Alert>
-      </div>
-    );
+    return <Alert type="danger">{error}</Alert>;
   }
 
   const monthRevenue = stats?.monthRevenue || 0;
@@ -81,136 +82,99 @@ export default function Dashboard() {
 
   return (
     <div className="flex-col gap-6">
-      {/* ── Message de bienvenue ────────────────────────────────────────────── */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          flexWrap: 'wrap',
-          gap: '1rem',
-        }}
-      >
+      {/* ── En-tête avec message de bienvenue et actions rapides ─────────────── */}
+      <div className="page-header flex-between">
         <div>
-          <h1
-            style={{
-              fontSize: '24px',
-              fontWeight: 800,
-              color: 'var(--color-text)',
-              letterSpacing: '-0.02em',
-            }}
-          >
-            Bonjour, {firstName}
-          </h1>
-          <p className="text-muted" style={{ marginTop: '4px' }}>
+          <h1 className="page-title">Bonjour, {firstName}</h1>
+          <p className="page-subtitle">
             Voici la situation financière, les tendances de vente et les alertes prédictives de
             votre commerce.
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div className="flex-gap-2">
           <Link to="/ventes" className="btn btn-primary btn-sm">
-            <Receipt size={16} /> Nouvelle vente
+            <Receipt size={16} strokeWidth={1.75} />
+            <span>Nouvelle vente</span>
           </Link>
           <Link to="/previsions" className="btn btn-secondary btn-sm">
-            <Sparkles size={16} /> Prévisions ML
+            <Sparkles size={16} strokeWidth={1.75} />
+            <span>Prévisions ML</span>
           </Link>
         </div>
       </div>
 
-      {/* ── Cartes métriques clés ────────────────────────────────────────────── */}
+      {/* ── 4 Cartes Métriques Clés en Grille ─────────────────────────────────── */}
       <div className="stats-grid">
         {/* Chiffre d'affaires du mois */}
         <div className="stat-card">
-          <div
-            className="stat-card-icon"
-            style={{ backgroundColor: 'rgba(230, 81, 0, 0.1)', color: 'var(--color-primary)' }}
-          >
-            <Wallet size={24} />
+          <div className="stat-info">
+            <span className="stat-label">Chiffre d'affaires du mois</span>
+            <div className="stat-value text-primary">{formatCurrency(monthRevenue)}</div>
+            <span className="stat-sub">Ventes finalisées ce mois</span>
           </div>
-          <div className="stat-card-body">
-            <span className="stat-card-label">Chiffre d'affaires du mois</span>
-            <div className="stat-card-value" style={{ color: 'var(--color-primary)' }}>
-              {formatCurrency(monthRevenue)}
-            </div>
-            <span className="stat-card-sub text-muted">Ventes payées ce mois</span>
+          <div className="stat-icon-wrap blue">
+            <Wallet size={22} strokeWidth={1.75} />
           </div>
         </div>
 
         {/* Nombre de ventes du mois */}
         <div className="stat-card">
-          <div
-            className="stat-card-icon"
-            style={{ backgroundColor: 'rgba(56, 161, 105, 0.1)', color: '#38a169' }}
-          >
-            <Receipt size={24} />
+          <div className="stat-info">
+            <span className="stat-label">Commandes du mois</span>
+            <div className="stat-value">{formatNumber(monthSalesCount)}</div>
+            <span className="stat-sub">Transactions finalisées</span>
           </div>
-          <div className="stat-card-body">
-            <span className="stat-card-label">Commandes du mois</span>
-            <div className="stat-card-value">{formatNumber(monthSalesCount)}</div>
-            <span className="stat-card-sub text-muted">Transactions finalisées</span>
+          <div className="stat-icon-wrap green">
+            <Receipt size={22} strokeWidth={1.75} />
           </div>
         </div>
 
         {/* Produits en stock bas */}
         <div className="stat-card">
-          <div
-            className="stat-card-icon"
-            style={{ backgroundColor: 'rgba(229, 62, 62, 0.1)', color: '#e53e3e' }}
-          >
-            <AlertTriangle size={24} />
-          </div>
-          <div className="stat-card-body">
-            <span className="stat-card-label">Produits en stock bas</span>
+          <div className="stat-info">
+            <span className="stat-label">Produits en stock bas</span>
             <div
-              className="stat-card-value"
-              style={{ color: lowStockProducts.length > 0 ? '#e53e3e' : 'inherit' }}
+              className={`stat-value ${lowStockProducts.length > 0 ? 'text-danger' : ''}`}
             >
               {lowStockProducts.length}
             </div>
-            <span className="stat-card-sub text-muted">Sous le seuil d'alerte</span>
+            <span className="stat-sub">Sous le seuil d'alerte</span>
+          </div>
+          <div className="stat-icon-wrap red">
+            <AlertTriangle size={22} strokeWidth={1.75} />
           </div>
         </div>
 
-        {/* Alertes de rupture prévues */}
+        {/* Alertes de rupture prévues (ML) */}
         <div className="stat-card">
-          <div
-            className="stat-card-icon"
-            style={{ backgroundColor: 'rgba(128, 90, 213, 0.1)', color: '#805ad5' }}
-          >
-            <Clock size={24} />
-          </div>
-          <div className="stat-card-body">
-            <span className="stat-card-label">Ruptures sous 7 jours</span>
-            <div
-              className="stat-card-value"
-              style={{ color: alerts.length > 0 ? '#805ad5' : 'inherit' }}
-            >
+          <div className="stat-info">
+            <span className="stat-label">Ruptures sous 7 jours</span>
+            <div className="stat-value" style={{ color: 'var(--color-purple)' }}>
               {alerts.length}
             </div>
-            <span className="stat-card-sub text-muted">Modèle prédictif ML</span>
+            <span className="stat-sub">Modèle prédictif ML</span>
+          </div>
+          <div className="stat-icon-wrap purple">
+            <Clock size={22} strokeWidth={1.75} />
           </div>
         </div>
       </div>
 
-      {/* ── Graphiques principaux ────────────────────────────────────────────── */}
+      {/* ── Graphiques Principaux ────────────────────────────────────────────── */}
       <div
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
-          gap: '1.5rem',
+          gap: '24px',
         }}
       >
-        {/* Graphique 1 : Évolution des ventes sur 30 jours */}
-        <div className="card" style={{ padding: '1.5rem' }}>
-          <div className="flex-between" style={{ marginBottom: '1.25rem' }}>
+        {/* Graphique 1 : Évolution des ventes sur 30 jours avec dégradé bleu léger */}
+        <div className="card">
+          <div className="flex-between" style={{ marginBottom: '20px' }}>
             <div>
-              <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-text)' }}>
-                Évolution des Ventes (30 jours)
-              </h2>
-              <span className="text-muted" style={{ fontSize: '12px' }}>
-                Total des ventes journalières en DT
-              </span>
+              <h2 className="card-title">Évolution des Ventes (30 jours)</h2>
+              <span className="text-muted text-xs">Total des encaissements journaliers</span>
             </div>
             <Badge type="info">Temps réel</Badge>
           </div>
@@ -222,9 +186,9 @@ export default function Dashboard() {
                 margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
               >
                 <defs>
-                  <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#e65100" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="#e65100" stopOpacity={0.0} />
+                  <linearGradient id="colorSalesBlue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#2563EB" stopOpacity={0.25} />
+                    <stop offset="95%" stopColor="#2563EB" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid
@@ -235,40 +199,42 @@ export default function Dashboard() {
                 <XAxis
                   dataKey="formattedDate"
                   tick={{ fontSize: 11, fill: 'var(--color-text-muted)' }}
+                  axisLine={{ stroke: 'var(--color-border)' }}
                 />
-                <YAxis tick={{ fontSize: 11, fill: 'var(--color-text-muted)' }} />
+                <YAxis
+                  tick={{ fontSize: 11, fill: 'var(--color-text-muted)' }}
+                  axisLine={{ stroke: 'var(--color-border)' }}
+                />
                 <Tooltip
                   formatter={(val) => [formatCurrency(val), "Chiffre d'affaires"]}
                   labelFormatter={(lbl, arr) => arr[0]?.payload?.date || lbl}
                   contentStyle={{
-                    backgroundColor: 'var(--color-card)',
+                    backgroundColor: 'var(--color-surface)',
                     borderColor: 'var(--color-border)',
-                    borderRadius: '8px',
+                    borderRadius: '10px',
+                    boxShadow: 'var(--shadow-md)',
+                    color: 'var(--color-text)',
                   }}
                 />
                 <Area
                   type="monotone"
                   dataKey="total"
-                  stroke="#e65100"
+                  stroke="#2563EB"
                   strokeWidth={2.5}
                   fillOpacity={1}
-                  fill="url(#colorSales)"
+                  fill="url(#colorSalesBlue)"
                 />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Graphique 2 : Top 5 des produits vendus */}
-        <div className="card" style={{ padding: '1.5rem' }}>
-          <div className="flex-between" style={{ marginBottom: '1.25rem' }}>
+        {/* Graphique 2 : Top 5 des produits vendus en barres horizontales */}
+        <div className="card">
+          <div className="flex-between" style={{ marginBottom: '20px' }}>
             <div>
-              <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-text)' }}>
-                Top 5 des Produits les Plus Vendus
-              </h2>
-              <span className="text-muted" style={{ fontSize: '12px' }}>
-                Volumes écoulés sur les 30 derniers jours
-              </span>
+              <h2 className="card-title">Top 5 des Produits les Plus Vendus</h2>
+              <span className="text-muted text-xs">Volumes écoulés sur les 30 derniers jours</span>
             </div>
             <Badge type="muted">Volume</Badge>
           </div>
@@ -282,7 +248,7 @@ export default function Dashboard() {
                 justifyContent: 'center',
               }}
             >
-              <span className="text-muted">Aucune vente enregistrée récemment</span>
+              <span className="text-muted text-sm">Aucune vente enregistrée récemment</span>
             </div>
           ) : (
             <div style={{ width: '100%', height: 260 }}>
@@ -290,31 +256,41 @@ export default function Dashboard() {
                 <BarChart
                   data={topProducts}
                   layout="vertical"
-                  margin={{ top: 5, right: 20, left: 20, bottom: 5 }}
+                  margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
                 >
                   <CartesianGrid
                     strokeDasharray="3 3"
                     horizontal={false}
                     stroke="var(--color-border)"
                   />
-                  <XAxis type="number" tick={{ fontSize: 11, fill: 'var(--color-text-muted)' }} />
+                  <XAxis
+                    type="number"
+                    tick={{ fontSize: 11, fill: 'var(--color-text-muted)' }}
+                    axisLine={{ stroke: 'var(--color-border)' }}
+                  />
                   <YAxis
                     type="category"
                     dataKey="name"
                     tick={{ fontSize: 11, fill: 'var(--color-text)' }}
-                    width={120}
+                    width={110}
+                    axisLine={{ stroke: 'var(--color-border)' }}
                   />
                   <Tooltip
                     formatter={(val) => [`${val} unités vendues`, 'Quantité']}
                     contentStyle={{
-                      backgroundColor: 'var(--color-card)',
+                      backgroundColor: 'var(--color-surface)',
                       borderColor: 'var(--color-border)',
-                      borderRadius: '8px',
+                      borderRadius: '10px',
+                      boxShadow: 'var(--shadow-md)',
+                      color: 'var(--color-text)',
                     }}
                   />
-                  <Bar dataKey="total_qty" fill="#e65100" radius={[0, 4, 4, 0]}>
+                  <Bar dataKey="total_qty" fill="#2563EB" radius={[0, 6, 6, 0]}>
                     {topProducts.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={index === 0 ? '#e65100' : '#f97316'} />
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={index === 0 ? '#2563EB' : index === 1 ? '#06B6D4' : '#60A5FA'}
+                      />
                     ))}
                   </Bar>
                 </BarChart>
@@ -329,30 +305,31 @@ export default function Dashboard() {
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
-          gap: '1.5rem',
+          gap: '24px',
         }}
       >
         {/* Encart Alertes de Rupture Prévues (Module ML) */}
-        <div className="card" style={{ padding: '1.5rem' }}>
-          <div className="flex-between" style={{ marginBottom: '1rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Sparkles size={18} style={{ color: '#805ad5' }} />
-              <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-text)' }}>
-                Alertes Prédictives ML (Rupture sous 7 jours)
-              </h2>
+        <div className="card">
+          <div className="flex-between" style={{ marginBottom: '16px' }}>
+            <div className="flex-gap-2">
+              <Sparkles size={18} style={{ color: 'var(--color-purple)' }} />
+              <h2 className="card-title">Alertes Prédictives ML (&lt; 7 jours)</h2>
             </div>
             <Link
               to="/previsions"
-              style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-primary)' }}
+              className="text-primary font-semibold text-xs flex-gap-2"
             >
-              Voir tout ({alerts.length}) <ArrowRight size={12} style={{ display: 'inline' }} />
+              <span>Voir tout ({alerts.length})</span>
+              <ArrowRight size={13} />
             </Link>
           </div>
 
           {alerts.length === 0 ? (
-            <div style={{ padding: '2rem 1rem', textAlign: 'center' }}>
-              <p className="text-muted" style={{ fontSize: '14px' }}>
-                ✅ Aucune rupture critique prévue pour les 7 prochains jours.
+            <div className="flex-col" style={{ padding: '24px 16px', alignItems: 'center', textAlign: 'center' }}>
+              <CheckCircle2 size={32} className="text-success" style={{ marginBottom: '8px' }} />
+              <p className="font-semibold text-sm">Aucune rupture critique prévue</p>
+              <p className="text-muted text-xs" style={{ marginTop: '4px' }}>
+                Vos stocks actuels sont suffisants pour les 7 prochains jours.
               </p>
             </div>
           ) : (
@@ -364,23 +341,30 @@ export default function Dashboard() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    padding: '10px 14px',
-                    borderRadius: '8px',
-                    backgroundColor: al.daysBeforeStockout <= 2 ? '#fff5f5' : 'var(--color-bg-alt)',
-                    border: `1px solid ${al.daysBeforeStockout <= 2 ? '#feb2b2' : 'var(--color-border)'}`,
+                    padding: '12px 14px',
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor:
+                      al.daysBeforeStockout <= 2
+                        ? 'var(--color-danger-bg)'
+                        : 'var(--color-surface-subtle)',
+                    border: `1px solid ${
+                      al.daysBeforeStockout <= 2
+                        ? 'var(--color-danger-border)'
+                        : 'var(--color-border)'
+                    }`,
                   }}
                 >
                   <div>
-                    <strong style={{ fontSize: '13px', color: 'var(--color-text)' }}>
+                    <strong className="text-sm" style={{ color: 'var(--color-text)' }}>
                       {al.product.name}
                     </strong>
-                    <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                    <div className="text-muted text-xs" style={{ marginTop: '2px' }}>
                       Stock actuel: <strong>{al.product.stock}</strong> | Vente moy.:{' '}
                       {al.avgForecastPerDay}/j
                     </div>
                   </div>
 
-                  <div style={{ textAlign: 'right' }}>
+                  <div className="text-right">
                     <Badge type={al.daysBeforeStockout <= 2 ? 'danger' : 'warning'}>
                       Rupture dans ~{al.daysBeforeStockout} j
                     </Badge>
@@ -392,26 +376,27 @@ export default function Dashboard() {
         </div>
 
         {/* Encart Produits en stock bas */}
-        <div className="card" style={{ padding: '1.5rem' }}>
-          <div className="flex-between" style={{ marginBottom: '1rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <AlertTriangle size={18} style={{ color: '#e53e3e' }} />
-              <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-text)' }}>
-                Produits en Stock Bas (Seuil d'alerte)
-              </h2>
+        <div className="card">
+          <div className="flex-between" style={{ marginBottom: '16px' }}>
+            <div className="flex-gap-2">
+              <AlertTriangle size={18} className="text-danger" />
+              <h2 className="card-title">Produits en Stock Bas</h2>
             </div>
             <Link
               to="/produits"
-              style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-primary)' }}
+              className="text-primary font-semibold text-xs flex-gap-2"
             >
-              Gérer le stock <ArrowRight size={12} style={{ display: 'inline' }} />
+              <span>Gérer le stock</span>
+              <ArrowRight size={13} />
             </Link>
           </div>
 
           {lowStockProducts.length === 0 ? (
-            <div style={{ padding: '2rem 1rem', textAlign: 'center' }}>
-              <p className="text-muted" style={{ fontSize: '14px' }}>
-                🎉 Tous vos stocks sont au-dessus de leur seuil minimal de sécurité.
+            <div className="flex-col" style={{ padding: '24px 16px', alignItems: 'center', textAlign: 'center' }}>
+              <Package size={32} className="text-success" style={{ marginBottom: '8px' }} />
+              <p className="font-semibold text-sm">Stocks sous contrôle</p>
+              <p className="text-muted text-xs" style={{ marginTop: '4px' }}>
+                Tous vos produits sont au-dessus de leur seuil minimal de sécurité.
               </p>
             </div>
           ) : (
@@ -423,22 +408,22 @@ export default function Dashboard() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    padding: '10px 14px',
-                    borderRadius: '8px',
-                    backgroundColor: 'var(--color-bg-alt)',
+                    padding: '12px 14px',
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: 'var(--color-surface-subtle)',
                     border: '1px solid var(--color-border)',
                   }}
                 >
                   <div>
-                    <strong style={{ fontSize: '13px', color: 'var(--color-text)' }}>
+                    <strong className="text-sm" style={{ color: 'var(--color-text)' }}>
                       {p.name}
                     </strong>
-                    <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
-                      SKU: {p.sku} {p.category_name && `• Catégorie: ${p.category_name}`}
+                    <div className="text-muted text-xs" style={{ marginTop: '2px' }}>
+                      SKU: {p.sku} {p.category_name && `- ${p.category_name}`}
                     </div>
                   </div>
 
-                  <div style={{ textAlign: 'right' }}>
+                  <div className="text-right">
                     <Badge type="danger">
                       {p.stock_quantity} / min {p.stock_min}
                     </Badge>

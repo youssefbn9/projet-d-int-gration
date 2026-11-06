@@ -32,7 +32,7 @@ export default function UsersPage() {
       firstName: u.first_name,
       lastName: u.last_name,
       role: u.role,
-      isActive: u.is_active === 1,
+      isActive: u.is_active === 1 || u.is_active === true,
     });
     setFormError('');
     setModal('edit');
@@ -61,7 +61,7 @@ export default function UsersPage() {
       setModal(null);
       refetch();
     } catch (err) {
-      setFormError(err.response?.data?.message || 'Erreur');
+      setFormError(err.response?.data?.message || 'Erreur lors de la sauvegarde');
     } finally {
       setSaving(false);
     }
@@ -74,23 +74,30 @@ export default function UsersPage() {
       setConfirmId(null);
       refetch();
     } catch (err) {
-      setFormError(err.response?.data?.message || 'Erreur suppression');
+      setFormError(err.response?.data?.message || 'Erreur lors de la suppression');
     } finally {
       setDeleting(false);
     }
   };
 
-  if (loading) return <Spinner />;
+  if (loading) return <Spinner text="Chargement des utilisateurs..." />;
 
   return (
     <div className="flex-col gap-6">
-      <div className="page-header flex-between">
+      <div className="page-header flex-between" style={{ flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--color-text)' }}>
+          <h2
+            style={{
+              fontSize: '24px',
+              fontWeight: 800,
+              color: 'var(--color-text)',
+              letterSpacing: '-0.02em',
+            }}
+          >
             Gestion des Utilisateurs
           </h2>
-          <p className="text-muted" style={{ fontSize: '13px' }}>
-            Contrôle des accès collaborateurs et permissions
+          <p className="text-muted" style={{ fontSize: '14px', marginTop: '4px' }}>
+            Contrôle des accès collaborateurs, attributions des rôles et sécurité
           </p>
         </div>
         <button type="button" className="btn btn-primary" onClick={openCreate}>
@@ -101,77 +108,92 @@ export default function UsersPage() {
 
       {error && <Alert type="danger">{error}</Alert>}
 
-      <div className="table-responsive">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>UTILISATEUR</th>
-              <th>EMAIL</th>
-              <th>RÔLE</th>
-              <th>STATUT</th>
-              <th className="text-right">ACTIONS</th>
-            </tr>
-          </thead>
-          <tbody>
-            {(users || []).length === 0 ? (
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <div className="table-responsive">
+          <table className="data-table">
+            <thead>
               <tr>
-                <td colSpan={5}>
-                  <EmptyState
-                    icon={Users}
-                    text="Aucun utilisateur enregistré"
-                    sub="Créez des accès pour vos collaborateurs."
-                  />
-                </td>
+                <th>UTILISATEUR</th>
+                <th>EMAIL</th>
+                <th>RÔLE</th>
+                <th>STATUT</th>
+                <th className="text-right">ACTIONS</th>
               </tr>
-            ) : (
-              (users || []).map((u) => (
-                <tr key={u.id}>
-                  <td>
-                    <span style={{ fontWeight: 600 }}>
-                      {u.first_name} {u.last_name}
-                    </span>
-                    {u.id === me?.userId && <span className="text-muted text-xs"> (vous)</span>}
-                  </td>
-                  <td className="text-sm">{u.email}</td>
-                  <td>
-                    <Badge type={u.role === 'admin' ? 'info' : 'muted'}>
-                      {u.role === 'admin' ? 'Administrateur' : 'Personnel'}
-                    </Badge>
-                  </td>
-                  <td>
-                    <Badge type={u.is_active ? 'success' : 'danger'}>
-                      {u.is_active ? 'Actif' : 'Inactif'}
-                    </Badge>
-                  </td>
-                  <td className="text-right">
-                    <div className="flex-gap-2" style={{ justifyContent: 'flex-end' }}>
-                      <button
-                        type="button"
-                        className="btn-icon"
-                        onClick={() => openEdit(u)}
-                        title="Modifier"
-                        aria-label={`Modifier ${u.first_name}`}
-                      >
-                        <Pencil size={15} strokeWidth={1.75} />
-                      </button>
-                      <button
-                        type="button"
-                        className="btn-icon"
-                        onClick={() => setConfirmId(u.id)}
-                        disabled={u.id === me?.userId}
-                        title="Supprimer"
-                        aria-label={`Supprimer ${u.first_name}`}
-                        style={{ color: 'var(--color-danger)' }}
-                      >
-                        <Trash2 size={15} strokeWidth={1.75} />
-                      </button>
-                    </div>
+            </thead>
+            <tbody>
+              {(users || []).length === 0 ? (
+                <tr>
+                  <td colSpan={5}>
+                    <EmptyState
+                      icon={Users}
+                      title="Aucun utilisateur enregistré"
+                      subtitle="Créez des accès sécurisés pour vos collaborateurs."
+                    />
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                (users || []).map((u) => (
+                  <tr key={u.id}>
+                    <td>
+                      <span style={{ fontWeight: 600, color: 'var(--color-text)' }}>
+                        {u.first_name} {u.last_name}
+                      </span>
+                      {u.id === me?.userId && (
+                        <span className="text-muted text-xs" style={{ marginLeft: '6px' }}>
+                          (vous)
+                        </span>
+                      )}
+                    </td>
+                    <td className="text-sm">{u.email}</td>
+                    <td>
+                      <Badge type={u.role === 'admin' ? 'info' : 'muted'}>
+                        {u.role === 'admin' ? 'Administrateur' : 'Personnel'}
+                      </Badge>
+                    </td>
+                    <td>
+                      <Badge type={u.is_active ? 'success' : 'danger'}>
+                        {u.is_active ? 'Actif' : 'Inactif'}
+                      </Badge>
+                    </td>
+                    <td className="text-right">
+                      <div className="flex-gap-2" style={{ justifyContent: 'flex-end' }}>
+                        <button
+                          type="button"
+                          className="btn-icon"
+                          onClick={() => openEdit(u)}
+                          title="Modifier"
+                          aria-label={`Modifier ${u.first_name}`}
+                        >
+                          <Pencil size={15} strokeWidth={1.75} />
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-icon"
+                          onClick={() => setConfirmId(u.id)}
+                          disabled={u.id === me?.userId}
+                          title={
+                            u.id === me?.userId
+                              ? 'Impossible de supprimer son propre compte'
+                              : 'Supprimer'
+                          }
+                          aria-label={`Supprimer ${u.first_name}`}
+                          style={{
+                            color:
+                              u.id === me?.userId
+                                ? 'var(--color-text-muted)'
+                                : 'var(--color-danger)',
+                          }}
+                        >
+                          <Trash2 size={15} strokeWidth={1.75} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {modal && (
@@ -250,7 +272,7 @@ export default function UsersPage() {
             </div>
 
             {modal === 'edit' && (
-              <label className="flex-gap-2" style={{ cursor: 'pointer', fontSize: '13px' }}>
+              <label className="flex-gap-2" style={{ cursor: 'pointer', fontSize: '13px', alignItems: 'center' }}>
                 <input
                   type="checkbox"
                   name="isActive"
@@ -258,7 +280,7 @@ export default function UsersPage() {
                   onChange={handleChange}
                   style={{ accentColor: 'var(--color-primary)' }}
                 />
-                Compte utilisateur actif
+                <span>Compte utilisateur actif</span>
               </label>
             )}
           </form>
@@ -267,7 +289,7 @@ export default function UsersPage() {
 
       {confirmId && (
         <ConfirmModal
-          message="Êtes-vous sûr de vouloir supprimer cet utilisateur ?"
+          message="Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible."
           onConfirm={handleDelete}
           onCancel={() => setConfirmId(null)}
           loading={deleting}

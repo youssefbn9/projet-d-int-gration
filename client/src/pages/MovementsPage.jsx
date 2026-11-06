@@ -18,7 +18,7 @@ const TYPE_BADGE = {
   entry: 'success',
   out: 'danger',
   exit: 'danger',
-  adjustment: 'info',
+  adjustment: 'warning',
 };
 
 export default function MovementsPage() {
@@ -97,7 +97,7 @@ export default function MovementsPage() {
     }
   };
 
-  if (loading) return <Spinner />;
+  if (loading) return <Spinner text="Chargement de l'historique des mouvements..." />;
 
   return (
     <div className="flex-col gap-6">
@@ -107,7 +107,7 @@ export default function MovementsPage() {
           <h2
             style={{
               fontSize: '24px',
-              fontWeight: 700,
+              fontWeight: 800,
               color: 'var(--color-text)',
               letterSpacing: '-0.02em',
             }}
@@ -115,7 +115,7 @@ export default function MovementsPage() {
             Mouvements de Stock
           </h2>
           <p className="text-muted" style={{ fontSize: '14px', marginTop: '4px' }}>
-            Journal d'audit temps réel des entrées, sorties et ajustements d'inventaire
+            Journal d'audit en temps réel des flux d'entrées, sorties et ajustements d'inventaire
           </p>
         </div>
         <button type="button" className="btn btn-primary" onClick={() => setModal(true)}>
@@ -129,37 +129,37 @@ export default function MovementsPage() {
         <div className="stat-card" style={{ padding: '16px 20px' }}>
           <div className="stat-info">
             <span className="stat-label">Total Mouvements</span>
-            <span className="stat-value" style={{ fontSize: '22px' }}>{stats.total}</span>
-            <span className="stat-sub">Historique enregistré</span>
+            <span className="stat-value" style={{ fontSize: '24px', fontVariantNumeric: 'tabular-nums' }}>{stats.total}</span>
+            <span className="stat-sub">Historique global</span>
           </div>
-          <div className="stat-icon-wrap turquoise" style={{ width: '40px', height: '40px' }}>
-            <History size={18} />
+          <div className="stat-icon-wrap blue" style={{ width: '40px', height: '40px' }}>
+            <History size={18} strokeWidth={1.75} />
           </div>
         </div>
 
         <div className="stat-card" style={{ padding: '16px 20px' }}>
           <div className="stat-info">
             <span className="stat-label">Entrées de stock</span>
-            <span className="stat-value" style={{ fontSize: '22px', color: 'var(--color-success)' }}>
+            <span className="stat-value" style={{ fontSize: '24px', color: 'var(--color-success)', fontVariantNumeric: 'tabular-nums' }}>
               +{stats.entries}
             </span>
             <span className="stat-sub">Approvisionnements & retours</span>
           </div>
-          <div className="stat-icon-wrap emerald" style={{ width: '40px', height: '40px' }}>
-            <ArrowDownLeft size={18} />
+          <div className="stat-icon-wrap green" style={{ width: '40px', height: '40px' }}>
+            <ArrowDownLeft size={18} strokeWidth={1.75} />
           </div>
         </div>
 
         <div className="stat-card" style={{ padding: '16px 20px' }}>
           <div className="stat-info">
             <span className="stat-label">Sorties de stock</span>
-            <span className="stat-value" style={{ fontSize: '22px', color: 'var(--color-danger)' }}>
+            <span className="stat-value" style={{ fontSize: '24px', color: 'var(--color-danger)', fontVariantNumeric: 'tabular-nums' }}>
               -{stats.exits}
             </span>
             <span className="stat-sub">Ventes & déstockages</span>
           </div>
-          <div className="stat-icon-wrap coral" style={{ width: '40px', height: '40px' }}>
-            <ArrowUpRight size={18} />
+          <div className="stat-icon-wrap red" style={{ width: '40px', height: '40px' }}>
+            <ArrowUpRight size={18} strokeWidth={1.75} />
           </div>
         </div>
       </div>
@@ -176,12 +176,12 @@ export default function MovementsPage() {
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: '12px',
-          background: 'var(--color-surface)',
         }}
       >
         <div style={{ position: 'relative', flex: '1', minWidth: '220px', maxWidth: '380px' }}>
           <Search
             size={16}
+            strokeWidth={1.75}
             style={{
               position: 'absolute',
               left: '12px',
@@ -201,13 +201,13 @@ export default function MovementsPage() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <SlidersHorizontal size={15} style={{ color: 'var(--color-text-muted)' }} />
+          <SlidersHorizontal size={15} strokeWidth={1.75} style={{ color: 'var(--color-text-muted)' }} />
           <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)', fontWeight: 500 }}>
-            Filtrer :
+            Filtrer par type :
           </span>
           <select
             className="form-select"
-            style={{ height: '38px', fontSize: '13px', width: 'auto', minWidth: '150px' }}
+            style={{ height: '38px', fontSize: '13px', width: 'auto', minWidth: '160px' }}
             value={selectedType}
             onChange={(e) => setSelectedType(e.target.value)}
           >
@@ -220,79 +220,81 @@ export default function MovementsPage() {
       </div>
 
       {/* Tableau des mouvements */}
-      <div className="table-responsive">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>DATE & HEURE</th>
-              <th>PRODUIT</th>
-              <th>TYPE</th>
-              <th className="text-right">VARIATION</th>
-              <th>OPÉRATEUR</th>
-              <th>MOTIF & JUSTIFICATIF</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredMovements.length === 0 ? (
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <div className="table-responsive">
+          <table className="data-table">
+            <thead>
               <tr>
-                <td colSpan={6}>
-                  <EmptyState
-                    icon={History}
-                    text={search || selectedType !== 'all' ? 'Aucun mouvement correspondant aux critères' : 'Aucun mouvement de stock'}
-                    sub={search || selectedType !== 'all' ? 'Essayez de réinitialiser la recherche ou le filtre.' : 'Les variations de stock manuelles ou par vente apparaîtront ici.'}
-                  />
-                </td>
+                <th>DATE & HEURE</th>
+                <th>PRODUIT</th>
+                <th>TYPE</th>
+                <th className="text-right">VARIATION</th>
+                <th>OPÉRATEUR</th>
+                <th>MOTIF & JUSTIFICATIF</th>
               </tr>
-            ) : (
-              filteredMovements.map((m) => (
-                <tr key={m.id}>
-                  <td style={{ fontSize: '13px', color: 'var(--color-text-secondary)' }}>
-                    {formatDateTime(m.created_at)}
-                  </td>
-                  <td>
-                    <div style={{ fontWeight: 600, color: 'var(--color-text)' }}>{m.product_name}</div>
-                    <div className="text-muted text-xs" style={{ fontFamily: 'monospace' }}>
-                      {m.sku}
-                    </div>
-                  </td>
-                  <td>
-                    <Badge type={TYPE_BADGE[m.type] || 'muted'}>
-                      {TYPE_LABELS[m.type] || m.type}
-                    </Badge>
-                  </td>
-                  <td
-                    className="text-right"
-                    style={{
-                      fontWeight: 700,
-                      fontFamily: 'monospace',
-                      fontSize: '14px',
-                      color:
-                        m.quantity > 0 || m.type === 'entry' || m.type === 'in'
-                          ? 'var(--color-success)'
-                          : 'var(--color-danger)',
-                    }}
-                  >
-                    {m.quantity > 0 ? `+${m.quantity}` : m.quantity}
-                  </td>
-                  <td style={{ fontSize: '13px' }}>
-                    {m.first_name || m.last_name ? (
-                      `${m.first_name || ''} ${m.last_name || ''}`.trim()
-                    ) : (
-                      <span className="text-muted">Système</span>
-                    )}
-                  </td>
-                  <td className="text-muted text-sm">
-                    {m.reason ? (
-                      <span style={{ color: 'var(--color-text-secondary)' }}>{m.reason}</span>
-                    ) : (
-                      <span style={{ fontStyle: 'italic', color: 'var(--color-text-muted)' }}>Automatique</span>
-                    )}
+            </thead>
+            <tbody>
+              {filteredMovements.length === 0 ? (
+                <tr>
+                  <td colSpan={6}>
+                    <EmptyState
+                      icon={History}
+                      title={search || selectedType !== 'all' ? 'Aucun mouvement correspondant' : 'Aucun mouvement de stock'}
+                      subtitle={search || selectedType !== 'all' ? 'Essayez de modifier votre recherche ou filtre.' : 'Les variations de stock manuelles ou par vente apparaîtront ici.'}
+                    />
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                filteredMovements.map((m) => (
+                  <tr key={m.id}>
+                    <td style={{ fontSize: '13px', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>
+                      {formatDateTime(m.created_at)}
+                    </td>
+                    <td>
+                      <div style={{ fontWeight: 600, color: 'var(--color-text)' }}>{m.product_name}</div>
+                      <div className="text-muted text-xs" style={{ fontFamily: 'monospace', marginTop: '2px' }}>
+                        SKU: {m.sku}
+                      </div>
+                    </td>
+                    <td>
+                      <Badge type={TYPE_BADGE[m.type] || 'muted'}>
+                        {TYPE_LABELS[m.type] || m.type}
+                      </Badge>
+                    </td>
+                    <td
+                      className="text-right"
+                      style={{
+                        fontWeight: 700,
+                        fontVariantNumeric: 'tabular-nums',
+                        fontSize: '14px',
+                        color:
+                          m.quantity > 0 || m.type === 'entry' || m.type === 'in'
+                            ? 'var(--color-success)'
+                            : 'var(--color-danger)',
+                      }}
+                    >
+                      {m.quantity > 0 ? `+${m.quantity}` : m.quantity}
+                    </td>
+                    <td style={{ fontSize: '13px', color: 'var(--color-text)' }}>
+                      {m.first_name || m.last_name ? (
+                        `${m.first_name || ''} ${m.last_name || ''}`.trim()
+                      ) : (
+                        <span className="text-muted">Système</span>
+                      )}
+                    </td>
+                    <td className="text-sm">
+                      {m.reason ? (
+                        <span style={{ color: 'var(--color-text-secondary)' }}>{m.reason}</span>
+                      ) : (
+                        <span style={{ fontStyle: 'italic', color: 'var(--color-text-muted)' }}>Automatique</span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Modal Nouveau Mouvement */}
@@ -362,7 +364,7 @@ export default function MovementsPage() {
               <input
                 name="reason"
                 className="form-input"
-                placeholder="Ex: Réception livraison fournisseur, casse, réajustement inventaire…"
+                placeholder="Ex: Réception livraison fournisseur, casse, inventaire périodique…"
                 value={form.reason}
                 onChange={handleChange}
               />

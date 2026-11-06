@@ -5,7 +5,7 @@ import { useToast } from '../components/Toast';
 import DataTable from '../components/DataTable';
 import FormField from '../components/FormField';
 import ConfirmDialog from '../components/ConfirmDialog';
-import { Modal, Spinner } from '../components/UI';
+import { Modal, Spinner, Badge } from '../components/UI';
 import { formatDate } from '../utils/format';
 import { Users, Building, Tag, UserCheck, Plus, Pencil, Trash2 } from 'lucide-react';
 
@@ -56,7 +56,7 @@ export default function ClientsFournisseurs() {
       if (isAdmin && results[3]) {
         setEmployees(results[3]?.data?.data || []);
       }
-    } catch (err) {
+    } catch {
       toast.error('Erreur lors du chargement des données');
     } finally {
       setLoading(false);
@@ -202,7 +202,6 @@ export default function ClientsFournisseurs() {
       setDeleteTarget(null);
       loadData();
     } catch (err) {
-      // Message d'erreur serveur (ex: catégorie liée à des produits, ou client lié à des ventes)
       toast.error(err.response?.data?.message || 'Impossible de supprimer cet enregistrement');
       setDeleteTarget(null);
     } finally {
@@ -215,7 +214,7 @@ export default function ClientsFournisseurs() {
     {
       key: 'name',
       header: 'NOM DU CLIENT',
-      render: (c) => <span style={{ fontWeight: 600 }}>{c.name}</span>,
+      render: (c) => <span style={{ fontWeight: 600, color: 'var(--color-text)' }}>{c.name}</span>,
     },
     {
       key: 'email',
@@ -240,17 +239,19 @@ export default function ClientsFournisseurs() {
         <div className="flex-gap-2" style={{ justifyContent: 'flex-end' }}>
           <button
             type="button"
-            className="btn btn-icon btn-sm"
+            className="btn-icon"
             onClick={() => handleOpenEdit('client', c)}
             title="Modifier"
+            aria-label={`Modifier ${c.name}`}
           >
             <Pencil size={15} strokeWidth={1.75} />
           </button>
           <button
             type="button"
-            className="btn btn-icon btn-sm"
+            className="btn-icon"
             onClick={() => setDeleteTarget({ type: 'client', item: c })}
             title="Supprimer"
+            aria-label={`Supprimer ${c.name}`}
             style={{ color: 'var(--color-danger)' }}
           >
             <Trash2 size={15} strokeWidth={1.75} />
@@ -264,7 +265,7 @@ export default function ClientsFournisseurs() {
     {
       key: 'name',
       header: 'FOURNISSEUR',
-      render: (s) => <span style={{ fontWeight: 600 }}>{s.name}</span>,
+      render: (s) => <span style={{ fontWeight: 600, color: 'var(--color-text)' }}>{s.name}</span>,
     },
     {
       key: 'email',
@@ -289,17 +290,19 @@ export default function ClientsFournisseurs() {
         <div className="flex-gap-2" style={{ justifyContent: 'flex-end' }}>
           <button
             type="button"
-            className="btn btn-icon btn-sm"
+            className="btn-icon"
             onClick={() => handleOpenEdit('supplier', s)}
             title="Modifier"
+            aria-label={`Modifier ${s.name}`}
           >
             <Pencil size={15} strokeWidth={1.75} />
           </button>
           <button
             type="button"
-            className="btn btn-icon btn-sm"
+            className="btn-icon"
             onClick={() => setDeleteTarget({ type: 'supplier', item: s })}
             title="Supprimer"
+            aria-label={`Supprimer ${s.name}`}
             style={{ color: 'var(--color-danger)' }}
           >
             <Trash2 size={15} strokeWidth={1.75} />
@@ -313,7 +316,7 @@ export default function ClientsFournisseurs() {
     {
       key: 'name',
       header: 'NOM DE LA CATÉGORIE',
-      render: (cat) => <span style={{ fontWeight: 600 }}>{cat.name}</span>,
+      render: (cat) => <span style={{ fontWeight: 600, color: 'var(--color-text)' }}>{cat.name}</span>,
     },
     {
       key: 'created_at',
@@ -328,17 +331,19 @@ export default function ClientsFournisseurs() {
         <div className="flex-gap-2" style={{ justifyContent: 'flex-end' }}>
           <button
             type="button"
-            className="btn btn-icon btn-sm"
+            className="btn-icon"
             onClick={() => handleOpenEdit('category', cat)}
             title="Modifier"
+            aria-label={`Modifier ${cat.name}`}
           >
             <Pencil size={15} strokeWidth={1.75} />
           </button>
           <button
             type="button"
-            className="btn btn-icon btn-sm"
+            className="btn-icon"
             onClick={() => setDeleteTarget({ type: 'category', item: cat })}
             title="Supprimer"
+            aria-label={`Supprimer ${cat.name}`}
             style={{ color: 'var(--color-danger)' }}
           >
             <Trash2 size={15} strokeWidth={1.75} />
@@ -354,7 +359,7 @@ export default function ClientsFournisseurs() {
       header: 'COLLABORATEUR',
       render: (u) => (
         <div>
-          <span style={{ fontWeight: 600 }}>
+          <span style={{ fontWeight: 600, color: 'var(--color-text)' }}>
             {u.first_name} {u.last_name}
           </span>
           {u.id === user?.userId && <span className="text-muted text-xs"> (vous)</span>}
@@ -370,18 +375,18 @@ export default function ClientsFournisseurs() {
       key: 'role',
       header: 'RÔLE',
       render: (u) => (
-        <span className={`badge ${u.role === 'admin' ? 'badge-primary' : 'badge-neutral'}`}>
+        <Badge type={u.role === 'admin' ? 'info' : 'muted'}>
           {u.role === 'admin' ? 'Administrateur' : 'Personnel'}
-        </span>
+        </Badge>
       ),
     },
     {
       key: 'is_active',
       header: 'STATUT',
       render: (u) => (
-        <span className={`badge ${u.is_active ? 'badge-success' : 'badge-danger'}`}>
+        <Badge type={u.is_active ? 'success' : 'danger'}>
           {u.is_active ? 'Actif' : 'Inactif'}
-        </span>
+        </Badge>
       ),
     },
     {
@@ -392,19 +397,21 @@ export default function ClientsFournisseurs() {
         <div className="flex-gap-2" style={{ justifyContent: 'flex-end' }}>
           <button
             type="button"
-            className="btn btn-icon btn-sm"
+            className="btn-icon"
             onClick={() => handleOpenEdit('employee', u)}
             title="Modifier"
+            aria-label={`Modifier ${u.first_name}`}
           >
             <Pencil size={15} strokeWidth={1.75} />
           </button>
           <button
             type="button"
-            className="btn btn-icon btn-sm"
+            className="btn-icon"
             onClick={() => setDeleteTarget({ type: 'employee', item: u })}
             disabled={u.id === user?.userId}
             title={u.id === user?.userId ? 'Impossible de se supprimer soi-même' : 'Supprimer'}
-            style={{ color: u.id === user?.userId ? '#A89F91' : 'var(--color-danger)' }}
+            aria-label={`Supprimer ${u.first_name}`}
+            style={{ color: u.id === user?.userId ? 'var(--color-text-muted)' : 'var(--color-danger)' }}
           >
             <Trash2 size={15} strokeWidth={1.75} />
           </button>
@@ -416,12 +423,12 @@ export default function ClientsFournisseurs() {
   return (
     <div className="flex-col gap-6">
       {/* ── En-tête de page ───────────────────────────────────────────── */}
-      <div className="page-header flex-between">
+      <div className="page-header flex-between" style={{ flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <h2
             style={{
               fontSize: '24px',
-              fontWeight: 700,
+              fontWeight: 800,
               color: 'var(--color-text)',
               letterSpacing: '-0.02em',
             }}
@@ -451,14 +458,14 @@ export default function ClientsFournisseurs() {
         </button>
       </div>
 
-      {/* ── Onglets de navigation ────────────────────────────────────── */}
-      <div className="login-tabs" style={{ maxWidth: 640 }}>
+      {/* ── Onglets de navigation soulignés ────────────────────────────── */}
+      <div className="tabs-nav">
         <button
           type="button"
           className={`tab-btn ${activeTab === 'clients' ? 'active' : ''}`}
           onClick={() => setActiveTab('clients')}
         >
-          <Users size={16} strokeWidth={1.75} style={{ display: 'inline', marginRight: 6 }} />
+          <Users size={16} strokeWidth={1.75} />
           Clients ({clients.length})
         </button>
         <button
@@ -466,7 +473,7 @@ export default function ClientsFournisseurs() {
           className={`tab-btn ${activeTab === 'suppliers' ? 'active' : ''}`}
           onClick={() => setActiveTab('suppliers')}
         >
-          <Building size={16} strokeWidth={1.75} style={{ display: 'inline', marginRight: 6 }} />
+          <Building size={16} strokeWidth={1.75} />
           Fournisseurs ({suppliers.length})
         </button>
         <button
@@ -474,7 +481,7 @@ export default function ClientsFournisseurs() {
           className={`tab-btn ${activeTab === 'categories' ? 'active' : ''}`}
           onClick={() => setActiveTab('categories')}
         >
-          <Tag size={16} strokeWidth={1.75} style={{ display: 'inline', marginRight: 6 }} />
+          <Tag size={16} strokeWidth={1.75} />
           Catégories ({categories.length})
         </button>
         {isAdmin && (
@@ -483,17 +490,17 @@ export default function ClientsFournisseurs() {
             className={`tab-btn ${activeTab === 'users' ? 'active' : ''}`}
             onClick={() => setActiveTab('users')}
           >
-            <UserCheck size={16} strokeWidth={1.75} style={{ display: 'inline', marginRight: 6 }} />
+            <UserCheck size={16} strokeWidth={1.75} />
             Employés ({employees.length})
           </button>
         )}
       </div>
 
-      {/* ── Tableau du contenu de l'onglet actif ─────────────────────── */}
+      {/* ── Contenu de l'onglet actif ─────────────────────────────────── */}
       {loading ? (
-        <Spinner />
+        <Spinner text="Chargement des données..." />
       ) : (
-        <>
+        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
           {activeTab === 'clients' && (
             <DataTable
               columns={clientColumns}
@@ -525,7 +532,7 @@ export default function ClientsFournisseurs() {
               emptyText="Aucun collaborateur enregistré"
             />
           )}
-        </>
+        </div>
       )}
 
       {/* ── Modale de Création / Modification ──────────────────────────── */}
@@ -700,11 +707,12 @@ export default function ClientsFournisseurs() {
                 </div>
 
                 {modalMode === 'edit' && (
-                  <label className="flex-gap-2" style={{ alignItems: 'center', cursor: 'pointer' }}>
+                  <label className="flex-gap-2" style={{ alignItems: 'center', cursor: 'pointer', fontSize: '13px' }}>
                     <input
                       type="checkbox"
                       checked={formData.isActive}
                       onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                      style={{ accentColor: 'var(--color-primary)' }}
                     />
                     <span>Compte actif</span>
                   </label>

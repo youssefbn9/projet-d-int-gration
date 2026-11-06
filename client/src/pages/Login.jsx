@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
 import FormField from '../components/FormField';
 import { Alert } from '../components/UI';
-import { Package, ShoppingCart, TrendingUp } from 'lucide-react';
+import { Package2, Package, ShoppingCart, TrendingUp, ShieldCheck, UserCheck } from 'lucide-react';
 
 export default function Login() {
   const { user, login, register } = useAuth();
@@ -120,7 +120,7 @@ export default function Login() {
 
   return (
     <div className="login-split-page">
-      {/* Panneau gauche : Dégradé signature lumineux & arguments clés */}
+      {/* Panneau gauche : Dégradé bleu-turquoise vif, logo, accroche & bullet points */}
       <div className="login-left-panel">
         <div className="login-left-circles">
           <div className="circle-dec-1" />
@@ -129,67 +129,60 @@ export default function Login() {
 
         <div className="login-left-content">
           <div className="login-brand-badge">
-            <Package size={20} strokeWidth={2} />
+            <Package2 size={20} strokeWidth={1.75} />
             <span>StockPro SaaS</span>
           </div>
 
           <h1 className="login-left-title">Gérez vos stocks & ventes avec sérénité</h1>
           <p className="login-left-sub">
-            La solution cloud multi-commerces conçue pour les commerçants modernes, performante,
-            claire et intuitive.
+            La solution cloud multi-commerces moderne, rapide et intuitive pour piloter votre activité
+            en temps réel.
           </p>
 
           <div className="login-feature-list">
             <div className="login-feature-item">
               <div className="login-feature-icon">
-                <Package size={18} strokeWidth={2} />
+                <Package size={18} strokeWidth={1.75} />
               </div>
-              <span>Suivi du stock et alertes en temps réel</span>
+              <span>Suivi du stock et alertes de seuil en temps réel</span>
             </div>
 
             <div className="login-feature-item">
               <div className="login-feature-icon">
-                <ShoppingCart size={18} strokeWidth={2} />
+                <ShoppingCart size={18} strokeWidth={1.75} />
               </div>
-              <span>Encaissement et transactions atomiques sécurisées</span>
+              <span>Point de vente rapide et gestion des encaissements</span>
             </div>
 
             <div className="login-feature-item">
               <div className="login-feature-icon">
-                <TrendingUp size={18} strokeWidth={2} />
+                <TrendingUp size={18} strokeWidth={1.75} />
               </div>
-              <span>Prévision des ruptures et aide à l'approvisionnement</span>
+              <span>Modèle prédictif pour anticiper les ruptures à 7 jours</span>
             </div>
           </div>
         </div>
 
-        <div style={{ opacity: 0.85, fontSize: '13px', zIndex: 10 }}>
-          © {new Date().getFullYear()} StockPro. Plateforme certifiée et sécurisée.
+        <div className="text-xs" style={{ opacity: 0.85, zIndex: 10 }}>
+          StockPro {new Date().getFullYear()} - Plateforme cloud certifiée et sécurisée
         </div>
       </div>
 
-      {/* Panneau droit : Formulaire avec onglets Connexion / Inscription */}
+      {/* Panneau droit : Formulaire d'authentification */}
       <div className="login-right-panel">
         <div className="login-card-inner">
           <div style={{ marginBottom: '24px' }}>
-            <h2
-              style={{
-                fontSize: '24px',
-                fontWeight: 700,
-                color: 'var(--color-text)',
-                marginBottom: '6px',
-              }}
-            >
+            <h2 className="page-title">
               {tab === 'login' ? 'Bienvenue sur StockPro' : 'Créer votre commerce'}
             </h2>
-            <p className="text-muted" style={{ fontSize: '14px' }}>
+            <p className="page-subtitle">
               {tab === 'login'
-                ? 'Connectez-vous pour accéder à votre tableau de bord'
-                : "Commencez à gérer votre boutique dès aujourd'hui"}
+                ? 'Connectez-vous pour accéder à votre espace de gestion'
+                : 'Commencez à gérer votre boutique dès aujourd hui'}
             </p>
           </div>
 
-          <div className="login-tabs">
+          <div className="tabs-nav">
             <button
               type="button"
               className={`tab-btn ${tab === 'login' ? 'active' : ''}`}
@@ -242,7 +235,7 @@ export default function Login() {
                   setTouched((t) => ({ ...t, loginPassword: true }));
                 }}
                 onBlur={() => setTouched((t) => ({ ...t, loginPassword: true }))}
-                placeholder="••••••••"
+                placeholder="Votre mot de passe"
                 error={loginErrors.password}
                 autoComplete="current-password"
                 required
@@ -251,82 +244,58 @@ export default function Login() {
               <button
                 type="submit"
                 className="btn btn-primary w-full"
-                style={{ marginTop: '8px', padding: '12px' }}
+                style={{ marginTop: '8px' }}
                 disabled={loading}
               >
                 {loading ? 'Connexion en cours…' : 'Se connecter'}
               </button>
 
-              <div
-                style={{
-                  marginTop: '20px',
-                  padding: '12px 14px',
-                  borderRadius: '10px',
-                  background: 'var(--color-surface-subtle)',
-                  border: '1px solid var(--color-border)',
-                  fontSize: '13px',
-                }}
-              >
-                <div style={{ fontWeight: 600, color: 'var(--color-text)', marginBottom: '8px' }}>
+              <div className="demo-account-box">
+                <div className="form-label" style={{ marginBottom: '8px' }}>
                   Comptes de démonstration (cliquez pour remplir) :
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div className="flex-col gap-2">
                   <button
                     type="button"
+                    className="demo-account-btn"
                     onClick={() => {
                       setLoginForm({ email: 'admin@alpha.com', password: 'Admin1234!' });
                       setServerError('');
                     }}
-                    style={{
-                      background: 'none',
-                      border: '1px dashed var(--color-border)',
-                      padding: '6px 10px',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      color: 'var(--color-text-secondary)',
-                      fontSize: '12px',
-                    }}
                   >
-                    👑 <strong>Admin (Alpha) :</strong> <code>admin@alpha.com</code> / <code>Admin1234!</code>
+                    <span className="flex-gap-2">
+                      <ShieldCheck size={14} className="text-primary" />
+                      <strong>Admin (Alpha)</strong>
+                    </span>
+                    <span className="text-muted">admin@alpha.com</span>
                   </button>
                   <button
                     type="button"
+                    className="demo-account-btn"
                     onClick={() => {
                       setLoginForm({ email: 'admin@demo.tn', password: 'Admin123' });
                       setServerError('');
                     }}
-                    style={{
-                      background: 'none',
-                      border: '1px dashed var(--color-border)',
-                      padding: '6px 10px',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      color: 'var(--color-text-secondary)',
-                      fontSize: '12px',
-                    }}
                   >
-                    👑 <strong>Admin (Demo) :</strong> <code>admin@demo.tn</code> / <code>Admin123</code>
+                    <span className="flex-gap-2">
+                      <ShieldCheck size={14} className="text-primary" />
+                      <strong>Admin (Demo)</strong>
+                    </span>
+                    <span className="text-muted">admin@demo.tn</span>
                   </button>
                   <button
                     type="button"
+                    className="demo-account-btn"
                     onClick={() => {
                       setLoginForm({ email: 'staff@demo.tn', password: 'Staff123' });
                       setServerError('');
                     }}
-                    style={{
-                      background: 'none',
-                      border: '1px dashed var(--color-border)',
-                      padding: '6px 10px',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      color: 'var(--color-text-secondary)',
-                      fontSize: '12px',
-                    }}
                   >
-                    👤 <strong>Staff (Vendeur) :</strong> <code>staff@demo.tn</code> / <code>Staff123</code>
+                    <span className="flex-gap-2">
+                      <UserCheck size={14} className="text-primary" />
+                      <strong>Staff (Vendeur)</strong>
+                    </span>
+                    <span className="text-muted">staff@demo.tn</span>
                   </button>
                 </div>
               </div>
@@ -396,10 +365,10 @@ export default function Login() {
               <button
                 type="submit"
                 className="btn btn-primary w-full"
-                style={{ marginTop: '8px', padding: '12px' }}
+                style={{ marginTop: '8px' }}
                 disabled={loading}
               >
-                {loading ? "Création de l'espace…" : 'Créer mon commerce'}
+                {loading ? 'Création de l espace…' : 'Créer mon commerce'}
               </button>
             </form>
           )}

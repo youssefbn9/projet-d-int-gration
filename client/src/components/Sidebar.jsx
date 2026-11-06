@@ -1,26 +1,47 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
+  Package2,
   LayoutDashboard,
   Package,
   Users,
   ShoppingCart,
-  TrendingUp,
-  LogOut,
-  UserCheck,
   History,
+  TrendingUp,
+  UserCheck,
+  LogOut,
 } from 'lucide-react';
 
-const MAIN_NAV_ITEMS = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/produits', icon: Package, label: 'Produits' },
-  { to: '/clients-fournisseurs', icon: Users, label: 'Clients & Fournisseurs' },
-  { to: '/ventes', icon: ShoppingCart, label: 'Ventes' },
-  { to: '/movements', icon: History, label: 'Mouvements' },
-  { to: '/previsions', icon: TrendingUp, label: 'Prévisions' },
+const SECTIONS = [
+  {
+    title: 'Pilotage',
+    items: [
+      { to: '/dashboard', icon: LayoutDashboard, label: 'Tableau de bord' },
+    ],
+  },
+  {
+    title: 'Commerce',
+    items: [
+      { to: '/produits', icon: Package, label: 'Produits' },
+      { to: '/clients-fournisseurs', icon: Users, label: 'Clients & Fournisseurs' },
+      { to: '/ventes', icon: ShoppingCart, label: 'Ventes' },
+      { to: '/movements', icon: History, label: 'Mouvements' },
+    ],
+  },
+  {
+    title: 'Analytique',
+    items: [
+      { to: '/previsions', icon: TrendingUp, label: 'Prévisions' },
+    ],
+  },
 ];
 
-const ADMIN_NAV_ITEMS = [{ to: '/users', icon: UserCheck, label: 'Équipe & Utilisateurs' }];
+const ADMIN_SECTION = {
+  title: 'Administration',
+  items: [
+    { to: '/users', icon: UserCheck, label: 'Équipe & Utilisateurs' },
+  ],
+};
 
 export default function Sidebar({ open, onClose }) {
   const { user, logout } = useAuth();
@@ -45,7 +66,7 @@ export default function Sidebar({ open, onClose }) {
       {open && (
         <div
           className="modal-overlay"
-          style={{ zIndex: 99 }}
+          style={{ zIndex: 49 }}
           onClick={onClose}
           aria-label="Fermer le menu"
         />
@@ -54,7 +75,7 @@ export default function Sidebar({ open, onClose }) {
       <aside className={`sidebar${open ? ' open' : ''}`}>
         <div className="sidebar-logo">
           <div className="sidebar-logo-icon">
-            <Package size={20} strokeWidth={2} />
+            <Package2 size={20} strokeWidth={1.75} />
           </div>
           <div>
             <div className="sidebar-logo-text">StockPro</div>
@@ -65,46 +86,52 @@ export default function Sidebar({ open, onClose }) {
         </div>
 
         <nav className="sidebar-nav">
-          <p className="nav-section-title">Navigation</p>
-          {MAIN_NAV_ITEMS.map((item) => {
-            const IconComponent = item.icon;
-            return (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                onClick={onClose}
-                className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
-              >
-                <span className="nav-item-icon">
-                  <IconComponent size={18} strokeWidth={1.75} />
-                </span>
-                {item.label}
-              </NavLink>
-            );
-          })}
-
-          {user?.role === 'admin' && (
-            <>
-              <p className="nav-section-title" style={{ marginTop: '16px' }}>
-                Administration
-              </p>
-              {ADMIN_NAV_ITEMS.map((item) => {
+          {SECTIONS.map((section) => (
+            <div key={section.title}>
+              <div className="sidebar-section-title">{section.title}</div>
+              {section.items.map((item) => {
                 const IconComponent = item.icon;
                 return (
                   <NavLink
                     key={item.to}
                     to={item.to}
                     onClick={onClose}
-                    className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+                    className={({ isActive }) =>
+                      `sidebar-link${isActive ? ' active' : ''}`
+                    }
                   >
-                    <span className="nav-item-icon">
+                    <span className="sidebar-link-icon">
                       <IconComponent size={18} strokeWidth={1.75} />
                     </span>
-                    {item.label}
+                    <span>{item.label}</span>
                   </NavLink>
                 );
               })}
-            </>
+            </div>
+          ))}
+
+          {user?.role === 'admin' && (
+            <div>
+              <div className="sidebar-section-title">{ADMIN_SECTION.title}</div>
+              {ADMIN_SECTION.items.map((item) => {
+                const IconComponent = item.icon;
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    onClick={onClose}
+                    className={({ isActive }) =>
+                      `sidebar-link${isActive ? ' active' : ''}`
+                    }
+                  >
+                    <span className="sidebar-link-icon">
+                      <IconComponent size={18} strokeWidth={1.75} />
+                    </span>
+                    <span>{item.label}</span>
+                  </NavLink>
+                );
+              })}
+            </div>
           )}
         </nav>
 
@@ -123,7 +150,7 @@ export default function Sidebar({ open, onClose }) {
             </div>
             <button
               type="button"
-              className="btn btn-icon"
+              className="btn btn-icon btn-sm"
               onClick={handleLogout}
               title="Se déconnecter"
               aria-label="Déconnexion"
