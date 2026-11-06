@@ -99,6 +99,25 @@ table,
   font-variant-numeric: tabular-nums;
 }
 
+/* Scrollbar élégante & discrète */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #e2d7c5;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #c8baa5;
+}
+
 /* Liens & boutons focus universel */
 a {
   color: inherit;

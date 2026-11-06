@@ -11,7 +11,7 @@ const movementService = {
   async create(companyId, userId, { productId, type, quantity, reason }) {
     // Normaliser la quantité selon le type
     let adjustedQty = parseInt(quantity, 10);
-    if (type === 'exit' && adjustedQty > 0) adjustedQty = -adjustedQty;
+    if ((type === 'exit' || type === 'out') && adjustedQty > 0) adjustedQty = -adjustedQty;
 
     try {
       const id = await movementRepository.create({

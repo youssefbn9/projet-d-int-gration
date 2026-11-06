@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { movementService, productService } from '../services';
 import { useFetch } from '../hooks/useFetch';
 import { Spinner, EmptyState, Alert, Badge, Modal } from '../components/UI';
 import { formatDateTime } from '../utils/format';
-import { Plus, History } from 'lucide-react';
+import { Plus, History, ArrowDownLeft, ArrowUpRight, SlidersHorizontal, Search } from 'lucide-react';
 
 const TYPE_LABELS = {
   in: 'Entrée',
@@ -12,6 +12,7 @@ const TYPE_LABELS = {
   exit: 'Sortie',
   adjustment: 'Ajustement',
 };
+
 const TYPE_BADGE = {
   in: 'success',
   entry: 'success',
@@ -21,13 +22,57 @@ const TYPE_BADGE = {
 };
 
 export default function MovementsPage() {
-  const { data: movements, loading, error, refetch } = useFetch(() => movementService.getAll(), []);
-  const { data: products } = useFetch(() => productService.getAll(), []);
+  const { data: movementsData, loading, error, refetch } = useFetch(() => movementService.getAll(), []);
+  const { data: productsData } = useFetch(() => productService.getAll({ limit: 100 }), []);
+
+  const movements = useMemo(() => {
+    return Array.isArray(movementsData) ? movementsData : (movementsData?.items || []);
+  }, [movementsData]);
+
+  const products = useMemo(() => {
+    return Array.isArray(productsData) ? productsData : (productsData?.items || []);
+  }, [productsData]);
 
   const [modal, setModal] = useState(false);
   const [form, setForm] = useState({ productId: '', type: 'entry', quantity: 1, reason: '' });
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState('');
+
+  // Filtres
+  const [search, setSearch] = useState('');
+  const [selectedType, setSelectedType] = useState('all');
+
+  const filteredMovements = useMemo(() => {
+    return movements.filter((m) => {
+      const matchSearch =
+        !search ||
+        (m.product_name && m.product_name.toLowerCase().includes(search.toLowerCase())) ||
+        (m.sku && m.sku.toLowerCase().includes(search.toLowerCase())) ||
+        (m.reason && m.reason.toLowerCase().includes(search.toLowerCase()));
+
+      let matchType = true;
+      if (selectedType === 'in') {
+        matchType = m.type === 'in' || m.type === 'entry' || m.quantity > 0;
+      } else if (selectedType === 'out') {
+        matchType = m.type === 'out' || m.type === 'exit' || m.quantity < 0;
+      } else if (selectedType === 'adjustment') {
+        matchType = m.type === 'adjustment';
+      }
+
+      return matchSearch && matchType;
+    });
+  }, [movements, search, selectedType]);
+
+  // Statistiques rapides
+  const stats = useMemo(() => {
+    let entries = 0;
+    let exits = 0;
+    movements.forEach((m) => {
+      if (m.type === 'in' || m.type === 'entry' || m.quantity > 0) entries++;
+      else if (m.type === 'out' || m.type === 'exit' || m.quantity < 0) exits++;
+    });
+    return { total: movements.length, entries, exits };
+  }, [movements]);
 
   const handleChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
@@ -56,7 +101,8 @@ export default function MovementsPage() {
 
   return (
     <div className="flex-col gap-6">
-      <div className="page-header flex-between">
+      {/* Header */}
+      <div className="page-header flex-between" style={{ flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <h2
             style={{
@@ -69,7 +115,7 @@ export default function MovementsPage() {
             Mouvements de Stock
           </h2>
           <p className="text-muted" style={{ fontSize: '14px', marginTop: '4px' }}>
-            Traçabilité des entrées, sorties et ajustements d'inventaire
+            Journal d'audit temps réel des entrées, sorties et ajustements d'inventaire
           </p>
         </div>
         <button type="button" className="btn btn-primary" onClick={() => setModal(true)}>
@@ -78,38 +124,136 @@ export default function MovementsPage() {
         </button>
       </div>
 
+      {/* Mini KPI Cards */}
+      <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+        <div className="stat-card" style={{ padding: '16px 20px' }}>
+          <div className="stat-info">
+            <span className="stat-label">Total Mouvements</span>
+            <span className="stat-value" style={{ fontSize: '22px' }}>{stats.total}</span>
+            <span className="stat-sub">Historique enregistré</span>
+          </div>
+          <div className="stat-icon-wrap turquoise" style={{ width: '40px', height: '40px' }}>
+            <History size={18} />
+          </div>
+        </div>
+
+        <div className="stat-card" style={{ padding: '16px 20px' }}>
+          <div className="stat-info">
+            <span className="stat-label">Entrées de stock</span>
+            <span className="stat-value" style={{ fontSize: '22px', color: 'var(--color-success)' }}>
+              +{stats.entries}
+            </span>
+            <span className="stat-sub">Approvisionnements & retours</span>
+          </div>
+          <div className="stat-icon-wrap emerald" style={{ width: '40px', height: '40px' }}>
+            <ArrowDownLeft size={18} />
+          </div>
+        </div>
+
+        <div className="stat-card" style={{ padding: '16px 20px' }}>
+          <div className="stat-info">
+            <span className="stat-label">Sorties de stock</span>
+            <span className="stat-value" style={{ fontSize: '22px', color: 'var(--color-danger)' }}>
+              -{stats.exits}
+            </span>
+            <span className="stat-sub">Ventes & déstockages</span>
+          </div>
+          <div className="stat-icon-wrap coral" style={{ width: '40px', height: '40px' }}>
+            <ArrowUpRight size={18} />
+          </div>
+        </div>
+      </div>
+
       {error && <Alert type="danger">{error}</Alert>}
 
+      {/* Barre de Filtres et Recherche */}
+      <div
+        className="card"
+        style={{
+          padding: '14px 18px',
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '12px',
+          background: 'var(--color-surface)',
+        }}
+      >
+        <div style={{ position: 'relative', flex: '1', minWidth: '220px', maxWidth: '380px' }}>
+          <Search
+            size={16}
+            style={{
+              position: 'absolute',
+              left: '12px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: 'var(--color-text-muted)',
+            }}
+          />
+          <input
+            type="text"
+            className="form-input"
+            style={{ paddingLeft: '36px', height: '38px', fontSize: '13px' }}
+            placeholder="Rechercher par produit, référence SKU, motif..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <SlidersHorizontal size={15} style={{ color: 'var(--color-text-muted)' }} />
+          <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)', fontWeight: 500 }}>
+            Filtrer :
+          </span>
+          <select
+            className="form-select"
+            style={{ height: '38px', fontSize: '13px', width: 'auto', minWidth: '150px' }}
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value)}
+          >
+            <option value="all">Tous les types ({movements.length})</option>
+            <option value="in">Entrées uniquement</option>
+            <option value="out">Sorties uniquement</option>
+            <option value="adjustment">Ajustements manuels</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Tableau des mouvements */}
       <div className="table-responsive">
         <table className="data-table">
           <thead>
             <tr>
-              <th>DATE</th>
+              <th>DATE & HEURE</th>
               <th>PRODUIT</th>
               <th>TYPE</th>
-              <th className="text-right">QUANTITÉ</th>
+              <th className="text-right">VARIATION</th>
               <th>OPÉRATEUR</th>
-              <th>MOTIF</th>
+              <th>MOTIF & JUSTIFICATIF</th>
             </tr>
           </thead>
           <tbody>
-            {(movements || []).length === 0 ? (
+            {filteredMovements.length === 0 ? (
               <tr>
                 <td colSpan={6}>
                   <EmptyState
                     icon={History}
-                    text="Aucun mouvement de stock"
-                    sub="Les variations de stock manuelles ou par vente apparaîtront ici."
+                    text={search || selectedType !== 'all' ? 'Aucun mouvement correspondant aux critères' : 'Aucun mouvement de stock'}
+                    sub={search || selectedType !== 'all' ? 'Essayez de réinitialiser la recherche ou le filtre.' : 'Les variations de stock manuelles ou par vente apparaîtront ici.'}
                   />
                 </td>
               </tr>
             ) : (
-              (movements || []).map((m) => (
+              filteredMovements.map((m) => (
                 <tr key={m.id}>
-                  <td>{formatDateTime(m.created_at)}</td>
+                  <td style={{ fontSize: '13px', color: 'var(--color-text-secondary)' }}>
+                    {formatDateTime(m.created_at)}
+                  </td>
                   <td>
-                    <span style={{ fontWeight: 600 }}>{m.product_name}</span>{' '}
-                    <span className="text-muted text-xs">({m.sku})</span>
+                    <div style={{ fontWeight: 600, color: 'var(--color-text)' }}>{m.product_name}</div>
+                    <div className="text-muted text-xs" style={{ fontFamily: 'monospace' }}>
+                      {m.sku}
+                    </div>
                   </td>
                   <td>
                     <Badge type={TYPE_BADGE[m.type] || 'muted'}>
@@ -120,6 +264,8 @@ export default function MovementsPage() {
                     className="text-right"
                     style={{
                       fontWeight: 700,
+                      fontFamily: 'monospace',
+                      fontSize: '14px',
                       color:
                         m.quantity > 0 || m.type === 'entry' || m.type === 'in'
                           ? 'var(--color-success)'
@@ -128,10 +274,20 @@ export default function MovementsPage() {
                   >
                     {m.quantity > 0 ? `+${m.quantity}` : m.quantity}
                   </td>
-                  <td>
-                    {m.first_name} {m.last_name}
+                  <td style={{ fontSize: '13px' }}>
+                    {m.first_name || m.last_name ? (
+                      `${m.first_name || ''} ${m.last_name || ''}`.trim()
+                    ) : (
+                      <span className="text-muted">Système</span>
+                    )}
                   </td>
-                  <td className="text-muted text-sm">{m.reason || '—'}</td>
+                  <td className="text-muted text-sm">
+                    {m.reason ? (
+                      <span style={{ color: 'var(--color-text-secondary)' }}>{m.reason}</span>
+                    ) : (
+                      <span style={{ fontStyle: 'italic', color: 'var(--color-text-muted)' }}>Automatique</span>
+                    )}
+                  </td>
                 </tr>
               ))
             )}
@@ -139,6 +295,7 @@ export default function MovementsPage() {
         </table>
       </div>
 
+      {/* Modal Nouveau Mouvement */}
       {modal && (
         <Modal
           title="Nouveau mouvement de stock"
@@ -168,7 +325,7 @@ export default function MovementsPage() {
                 <option value="">— Sélectionner un article —</option>
                 {(products || []).map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.name} (stock actuel : {p.stock_quantity})
+                    {p.name} (Stock actuel : {p.stock_quantity ?? p.stock ?? 0})
                   </option>
                 ))}
               </select>
@@ -205,7 +362,7 @@ export default function MovementsPage() {
               <input
                 name="reason"
                 className="form-input"
-                placeholder="Ex: Réception commande fournisseur, casse, inventaire…"
+                placeholder="Ex: Réception livraison fournisseur, casse, réajustement inventaire…"
                 value={form.reason}
                 onChange={handleChange}
               />
