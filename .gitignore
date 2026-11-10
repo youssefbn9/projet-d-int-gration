@@ -1,5 +1,28 @@
-node_modules/
+# Secrets et configuration locale
 .env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Dépendances
+node_modules/
+
+# Builds et rapports
 dist/
+build/
 coverage/
+report.xml
+junit.xml
+
+# Logs
 *.log
+logs/
+npm-debug.log*
+
+# Environnements virtuels
+.venv/
+
+# Système
+.DS_Store
+Thumbs.db
