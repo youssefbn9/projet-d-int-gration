@@ -241,3 +241,6 @@ Pour une procédure pas à pas détaillée (Render, Railway, Vercel et MySQL man
 - Commits atomiques au format conventionnel : feat:, fix:, docs:, chore:, ci:, test:
 - Jamais de fichier .env dans Git : seul .env.example est versionné.
 - Exemple de commit conforme : docs: documenter les conventions de contribution
+
+## Support
+Contact : equipe-a@example.invalid
