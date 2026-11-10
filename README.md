@@ -233,3 +233,11 @@ Pour une procédure pas à pas détaillée (Render, Railway, Vercel et MySQL man
 - **`main`** : Branche de production stable, protégée, reflétant le code déployé.
 - **`dev`** : Branche d'intégration active regroupant les sprints validés.
 - **`feature/<nom>`** : Branches éphémères pour chaque nouvelle fonctionnalité ou passe métier avant merge par Pull Request.
+
+## Conventions de contribution
+
+- Aucun push direct sur main : toute modification passe par une Pull Request.
+- Une branche par intention : feature/..., fix/..., chore/..., docs/..., ci/...
+- Commits atomiques au format conventionnel : feat:, fix:, docs:, chore:, ci:, test:
+- Jamais de fichier .env dans Git : seul .env.example est versionné.
+- Exemple de commit conforme : docs: documenter les conventions de contribution
