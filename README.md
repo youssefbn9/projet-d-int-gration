@@ -243,4 +243,5 @@ Pour une procédure pas à pas détaillée (Render, Railway, Vercel et MySQL man
 - Exemple de commit conforme : docs: documenter les conventions de contribution
 
 ## Support
-Contact : equipe-b@example.invalid
+Contact equipe A : equipe-a@example.invalid
+Contact equipe B : equipe-b@example.invalid
