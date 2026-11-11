@@ -1,16 +1,32 @@
 name: StockPro CI/CD Pipeline
 
 on:
-  push:
-    branches: [main, dev]
   pull_request:
-    branches: [main, dev]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
-  # ── Job 1 : Backend (API Express + MySQL 8 Service) ─────────────────────────
-  server:
-    name: Backend Lint & Tests (MySQL 8)
+  check-project:
+    name: Contrôle du projet
     runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Exécuter le script de contrôle
+        run: ./scripts/check-project.sh
+
+  test:
+    name: Backend Lint & Tests (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22]
 
     services:
       mysql:
@@ -34,10 +50,10 @@ jobs:
       - name: Récupérer le code
         uses: actions/checkout@v4
 
-      - name: Configurer Node.js
+      - name: Configurer Node.js ${{ matrix.node }}
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ matrix.node }}
           cache: 'npm'
           cache-dependency-path: server/package-lock.json
 
@@ -47,7 +63,13 @@ jobs:
       - name: Vérifier le style et la qualité (ESLint)
         run: npm run lint
 
-      - name: Exécuter les tests avec couverture Jest & Supertest
+      - name: Générer un secret JWT éphémère
+        run: |
+          secret="$(openssl rand -hex 32)"
+          echo "::add-mask::$secret"
+          echo "JWT_SECRET=$secret" >> "$GITHUB_ENV"
+
+      - name: Exécuter les tests avec couverture et rapport XML
         env:
           NODE_ENV: test
           DB_HOST: 127.0.0.1
@@ -55,11 +77,19 @@ jobs:
           DB_USER: root
           DB_PASSWORD: ''
           DB_NAME: stockpro_test
-          JWT_SECRET: ci_secret_key_for_stockpro_super_secure_jwt
-        run: npm test -- --coverage
+          JEST_JUNIT_OUTPUT_DIR: .
+          JEST_JUNIT_OUTPUT_NAME: report.xml
+        run: npm test -- --coverage --reporters=default --reporters=jest-junit
 
-  # ── Job 2 : Frontend (React Vite + ESLint + Build) ──────────────────────────
-  client:
+      - name: Conserver le rapport de tests
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rapport-tests-node-${{ matrix.node }}
+          path: server/report.xml
+          if-no-files-found: warn
+
+  frontend:
     name: Frontend Lint & Production Build
     runs-on: ubuntu-latest
 
@@ -88,3 +118,29 @@ jobs:
         env:
           VITE_API_URL: /api
         run: npm run build
+
+  docker-build:
+    name: Build des images Docker
+    needs: [check-project, test, frontend]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Configurer Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Construire l'image de l'API
+        uses: docker/build-push-action@v6
+        with:
+          context: ./server
+          push: false
+          tags: stockpro-api:ci
+
+      - name: Construire l'image du frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./client
+          push: false
+          tags: stockpro-web:ci
