@@ -48,5 +48,16 @@ services:
       api:
         condition: service_healthy
 
+  adminer:
+    image: adminer:4
+    profiles: ["debug"]
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    ports:
+      - "127.0.0.1:8081:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   mysql_data:
