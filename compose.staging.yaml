@@ -1,0 +1,52 @@
+name: stockpro-staging
+
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:?DB_NAME manquant dans .env.staging}
+      MYSQL_USER: ${DB_USER:?DB_USER manquant dans .env.staging}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD manquant dans .env.staging}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD manquant dans .env.staging}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./server/sql/schema.production.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 20s
+    restart: unless-stopped
+
+  api:
+    image: ghcr.io/youssefbn9/stockpro-api:${IMAGE_TAG:?IMAGE_TAG manquant dans .env.deploy}
+    environment:
+      PORT: 5000
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_SSL: "false"
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET manquant dans .env.staging}
+      JWT_EXPIRES_IN: 24h
+      CLIENT_URL: ${CLIENT_URL}
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  web:
+    image: ghcr.io/youssefbn9/stockpro-web:${IMAGE_TAG:?IMAGE_TAG manquant dans .env.deploy}
+    ports:
+      - "5173:8080"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
