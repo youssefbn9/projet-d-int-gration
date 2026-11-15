@@ -245,3 +245,24 @@ Pour une procédure pas à pas détaillée (Render, Railway, Vercel et MySQL man
 ## Support
 Contact equipe A : equipe-a@example.invalid
 Contact equipe B : equipe-b@example.invalid
+
+## Démarrage en une commande (Docker)
+
+Prérequis : Docker avec Docker Compose.
+
+    ./scripts/start.sh
+
+Le script crée un fichier .env avec des secrets aléatoires (jamais versionné) s'il n'existe pas, puis construit et démarre trois services : db (MySQL 8, volume nommé mysql_data, port non publié), api (port 5000) et web (port 5173). Il attend que chaque service soit sain.
+
+- Application : http://localhost:5173
+- Santé de l'API : http://localhost:5000/api/health
+- Arrêter sans perdre les données : docker compose down
+- Administration de la base à la demande : docker compose --profile debug up -d adminer, puis http://localhost:8081
+
+## Chaîne DevOps
+
+- Contrôle local : ./scripts/check-project.sh (code 0 si tout est conforme, 1 sinon)
+- Intégration continue (.github/workflows/ci.yml) : contrôle du projet, tests du backend sur Node 20 et 22 avec MySQL 8 (rapport XML conservé en artefact), lint et build du frontend, puis construction des images Docker (needs)
+- Livraison : un tag vX.Y.Z publie stockpro-api et stockpro-web sur ghcr.io/youssefbn9
+- Mise en service en staging : compose.staging.yaml avec IMAGE_TAG, sans reconstruire l'image, contrôle avec ./scripts/wait-healthy.sh ; les fichiers .env.staging et .env.deploy ne sont pas versionnés
+- Retour arrière : remettre l'ancien IMAGE_TAG dans .env.deploy et relancer up -d --no-build (voir docs/incident-version-defectueuse.md)
